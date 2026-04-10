@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TireaPark · 3D Ultra Detail</title>
+<link href="https://cdn.jsdelivr.net/npm/mapbox-gl@3.3.0/dist/mapbox-gl.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="src/style.css">
+<script src="https://cdn.jsdelivr.net/npm/mapbox-gl@3.3.0/dist/mapbox-gl.js"></script>
+</head>
+<body>
+
+<!-- BOOT -->
+<div id="boot">
+  <div class="b-globe"><div class="b-dot"></div></div>
+  <div class="b-title">TIREAPARK</div>
+  <div class="b-sub">CLUJ-NAPOCA · HARTĂ 3D ULTRA DETAIL</div>
+  <div class="b-log" id="b-log">SE INIȚIALIZEAZĂ...</div>
+  <div class="b-track"><div class="b-fill" id="b-fill"></div></div>
+  <div class="b-pct" id="b-pct">0%</div>
+</div>
+
+<!-- MAP -->
+<div id="map"></div>
+
+<!-- CORNERS -->
+<div class="corner c-tl"></div>
+<div class="corner c-tr"></div>
+<div class="corner c-bl"></div>
+<div class="corner c-br"></div>
+
+<!-- HEADER -->
+<div id="hdr">
+  <div>
+    <div class="logo">TIREAPARK</div>
+    <div class="logo-s">MUNICIPIUL CLUJ-NAPOCA · 3D ULTRA DETAIL</div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center">
+    <div class="h-clock" id="clk">--:--:--</div>
+    <div class="h-date" id="dt">-- --- ----</div>
+  </div>
+  <div class="hbtns">
+    <div class="hb" id="btn-loc" title="Localizare GPS">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="#00c8ff" stroke-width="1.8"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#00c8ff" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </div>
+    <div class="hb" title="Notificări">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="#00c8ff" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div id="stats">
+  <div class="sp"><div class="sp-dot" style="background:#00ff88;box-shadow:0 0 5px #00ff88"></div><div class="sp-t"><b id="count-free">7</b> LIBERE</div></div>
+  <div class="sp"><div class="sp-dot" style="background:#ff3c50;box-shadow:0 0 5px #ff3c50"></div><div class="sp-t"><b id="count-occ">3</b> OCUPATE</div></div>
+  <div class="sp"><div class="sp-dot" style="background:#ffd700;box-shadow:0 0 5px #ffd700;animation:blink 1.4s ease-in-out infinite"></div><div class="sp-t">LIVE</div></div>
+</div>
+
+<!-- VIEW CONTROLS -->
+<div id="view-ctrl">
+  <div class="vc-lbl">VEDERE</div>
+  <div class="vc-btn active" id="vc-3d" onclick="setView('3d')">
+    <div class="vc-ico">🏙</div>
+    <div class="vc-t">3D</div>
+  </div>
+  <div class="vc-btn" id="vc-top" onclick="setView('top')">
+    <div class="vc-ico">🗺</div>
+    <div class="vc-t">TOP</div>
+  </div>
+  <div class="vc-btn" id="vc-tilt" onclick="setView('tilt')">
+    <div class="vc-ico">📐</div>
+    <div class="vc-t">TILT</div>
+  </div>
+  <div class="vc-btn" id="vc-street" onclick="setView('street')">
+    <div class="vc-ico">🚶</div>
+    <div class="vc-t">STRADĂ</div>
+  </div>
+  <div class="vc-btn" id="vc-spin" onclick="toggleSpin()">
+    <div class="vc-ico" id="spin-ico">↻</div>
+    <div class="vc-t">SPIN</div>
+  </div>
+</div>
+
+<!-- LEFT PANEL -->
+<div id="left-p">
+  <div class="lp">
+    <div class="lp-l">LIBERE</div>
+    <div class="lp-v" id="lp-free">7</div>
+    <div class="lp-u">DIN 10</div>
+    <div class="lp-bar"><div class="lp-f" style="width:70%;background:#00c8ff;box-shadow:0 0 6px rgba(0,200,255,.5)"></div></div>
+  </div>
+  <div class="lp">
+    <div class="lp-l">MIN TARIF</div>
+    <div class="lp-v" style="color:#ffd700;text-shadow:0 0 12px rgba(255,215,0,.45)" id="lp-price">3</div>
+    <div class="lp-u">LEI/ORA</div>
+    <div class="lp-bar"><div class="lp-f" style="width:42%;background:#ffd700;box-shadow:0 0 6px rgba(255,215,0,.45)"></div></div>
+  </div>
+  <div class="lp">
+    <div class="lp-l">SISTEM</div>
+    <div class="lp-v" style="font-size:11px;color:#00ff88;text-shadow:0 0 12px rgba(0,255,136,.4)">ONLINE</div>
+    <div class="lp-u">ACTIV</div>
+    <div class="lp-bar"><div class="lp-f" style="width:100%;background:#00ff88;animation:pb 2s ease-in-out infinite"></div></div>
+  </div>
+</div>
+
+<!-- PANEL -->
+<div id="pover" onclick="closePanel()"></div>
+<div id="panel">
+  <div class="p-drag"></div>
+  <div class="p-row">
+    <div>
+      <div class="p-badge" id="p-badge">IDENTIFICATOR PARCARE</div>
+      <div class="p-title" id="p-title">LOC #A1</div>
+      <div class="p-addr" id="p-addr">STR. MIHAI VITEAZU 7</div>
+    </div>
+    <button class="p-x" onclick="closePanel()">✕</button>
+  </div>
+  <div class="chips">
+    <div class="chip"><div class="chip-v" id="p-price">5</div><div class="chip-l">LEI/ORA</div></div>
+    <div class="chip"><div class="chip-v" id="p-hours" style="font-size:12px">08–18</div><div class="chip-l">PROGRAM</div></div>
+    <div class="chip"><div class="chip-v" id="p-stat" style="font-size:11px;color:#00ff88">LIBER</div><div class="chip-l">STATUS</div></div>
+  </div>
+  <button class="book free" id="p-btn" onclick="doBook()">REZERVA ACUM</button>
+</div>
+
+<!-- NAV -->
+<div id="bnav">
+  <div class="ni act" onclick="setNav(this)">
+    <div class="ni-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z" stroke="#00c8ff" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+    <span class="ni-lb">GRID</span>
+  </div>
+  <div class="ni" onclick="setNav(this)">
+    <div class="ni-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="rgba(0,200,255,.22)" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke="rgba(0,200,255,.22)" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <span class="ni-lb">SCAN</span>
+  </div>
+  <div class="ni" onclick="setNav(this)">
+    <div class="ni-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="1" stroke="rgba(0,200,255,.22)" stroke-width="1.5"/><path d="M16 2v4M8 2v4M3 10h18" stroke="rgba(0,200,255,.22)" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <span class="ni-lb">LOG</span>
+  </div>
+  <div class="ni" onclick="setNav(this)">
+    <div class="ni-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="rgba(0,200,255,.22)" stroke-width="1.5"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="rgba(0,200,255,.22)" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <span class="ni-lb">AGENT</span>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast">
+  <div class="t-box">
+    <div class="t-ic">✓</div>
+    <div class="t-title">REZERVARE CONFIRMATĂ</div>
+    <div class="t-sub" id="t-sub">LOC A1 · 5 LEI/ORA</div>
+  </div>
+</div>
+
+<script src="src/data.js"></script>
+<script src="src/map.js"></script>
+<script src="src/ui.js"></script>
+</body>
+</html>
