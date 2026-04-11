@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>TireaPark Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;min-height:100%;background:#0f1420;font-family:'Inter',sans-serif;color:#fff;padding-top:env(safe-area-inset-top)}
+input,button,select{font-size:16px!important}
+
+/* PIN SCREEN */
+#pin-screen{position:fixed;inset:0;z-index:999;background:#0f1420;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.pin-logo{width:56px;height:56px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.pin-logo svg{width:30px;height:30px}
+.pin-title{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:4px}
+.pin-sub{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:32px;letter-spacing:.06em}
+.pin-dots{display:flex;gap:14px;margin-bottom:32px}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.2);transition:all .2s}
+.pin-dot.filled{background:#fff;border-color:#fff}
+.pin-dot.error{background:#ff4444;border-color:#ff4444}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:260px}
+.pin-btn{height:70px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:#fff;font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.pin-btn:active{background:rgba(255,255,255,.18);transform:scale(.96)}
+.pin-btn.del{background:rgba(255,80,80,.08);border-color:rgba(255,80,80,.2);color:rgba(255,130,130,.9)}
+.pin-err{font-size:12px;color:#ff6464;margin-top:10px;min-height:18px;text-align:center}
+
+/* MAIN */
+#main{display:none}
+.dash-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px;max-width:560px;margin:0 auto}
+.dash-logo{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700}
+.dash-logo span{color:rgba(255,255,255,.3);font-size:10px;display:block;margin-top:1px;letter-spacing:.06em}
+.lock-btn{width:34px;height:34px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.5);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* NAV */
+#dash-nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(15,20,32,.98);border-top:1px solid rgba(255,255,255,.07);display:flex;padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
+.dn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0;min-height:44px;justify-content:center}
+.dn-ic{font-size:17px}
+.dn-lb{font-size:8px;color:rgba(255,255,255,.2);letter-spacing:.05em;font-weight:600}
+.dn.act .dn-lb{color:#fff}
+
+/* PAGES */
+.page{display:none;max-width:560px;margin:0 auto;padding:0 14px calc(80px + env(safe-area-inset-bottom)) 14px}
+.page.active{display:block}
+
+/* CARDS */
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;margin-bottom:10px}
+.card-title{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.1em;margin-bottom:12px;font-weight:600}
+
+/* STAT GRID */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.sc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:12px}
+.sc.g{border-color:rgba(0,230,77,.2);background:rgba(0,230,77,.04)}
+.sc.b{border-color:rgba(0,180,255,.2);background:rgba(0,180,255,.04)}
+.sc.y{border-color:rgba(250,204,21,.2);background:rgba(250,204,21,.04)}
+.sc.r{border-color:rgba(255,80,80,.2);background:rgba(255,80,80,.04)}
+.sv{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#fff}
+.sv.g{color:#00e64d}.sv.b{color:#00b4ff}.sv.y{color:#facc15}.sv.r{color:#ff6464}
+.sl{font-size:9px;color:rgba(255,255,255,.3);margin-top:3px;letter-spacing:.06em}
+
+/* PERIOD TABS */
+.ptabs{display:flex;gap:6px;margin-bottom:12px}
+.ptab{padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);transition:all .2s}
+.ptab.active{background:#fff;color:#000;border-color:#fff}
+
+/* CLIENT CARD */
+.cl-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:14px;margin-bottom:10px}
+.cl-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.cl-avatar{width:44px;height:44px;border-radius:50%;background:rgba(0,180,255,.15);border:2px solid rgba(0,180,255,.3);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#00b4ff;flex-shrink:0}
+.cl-name{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:#fff}
+.cl-parcare{font-size:10px;color:rgba(255,255,255,.35);margin-top:2px}
+.cl-garantie{font-size:9px;font-weight:700;padding:2px 8px;border-radius:6px;margin-left:auto;flex-shrink:0}
+.cl-garantie.yes{background:rgba(0,230,77,.15);color:#00e64d}
+.cl-garantie.no{background:rgba(255,180,0,.15);color:#ffb400}
+
+/* TABS IN CLIENT */
+.ctabs{display:flex;gap:4px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none}
+.ctabs::-webkit-scrollbar{display:none}
+.ctab{padding:5px 12px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(255,255,255,.4);white-space:nowrap;transition:all .2s}
+.ctab.active{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.2)}
+
+/* DATA ROWS */
+.dr{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.dr:last-child{border-bottom:none}
+.dr-lbl{font-size:11px;color:rgba(255,255,255,.35)}
+.dr-val{font-size:12px;color:#fff;font-weight:500;text-align:right}
+.dr-val.g{color:#00e64d}.dr-val.b{color:#00b4ff}.dr-val.y{color:#facc15}.dr-val.r{color:#ff6464}
+
+/* FINANCIAR SUMMARY */
+.fin-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px;margin-bottom:8px}
+.fin-title{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:8px}
+.fin-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0}
+.fin-lbl{font-size:11px;color:rgba(255,255,255,.45)}
+.fin-val{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700}
+.fin-sep{border:none;border-top:1px solid rgba(255,255,255,.06);margin:6px 0}
+.fin-total{display:flex;justify-content:space-between;align-items:center;padding:6px 0}
+.fin-total-lbl{font-size:12px;color:rgba(255,255,255,.6);font-weight:600}
+.fin-total-val{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700}
+
+/* IBAN */
+.iban-box{background:rgba(0,180,255,.06);border:1px solid rgba(0,180,255,.15);border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin:6px 0;cursor:pointer}
+.iban-txt{font-family:'Space Grotesk',sans-serif;font-size:11px;color:#fff;letter-spacing:.04em}
+.iban-copy{font-size:10px;color:rgba(0,180,255,.8)}
+
+/* ISTORC DECONTARI */
+.dec-hist-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:8px 10px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.dec-hist-period{font-size:11px;color:rgba(255,255,255,.5)}
+.dec-hist-suma{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#facc15}
+.dec-hist-status{font-size:9px;font-weight:700;padding:2px 8px;border-radius:6px}
+.dec-hist-status.platit{background:rgba(0,230,77,.15);color:#00e64d}
+.dec-hist-status.neplatit{background:rgba(255,180,0,.15);color:#ffb400}
+
+/* ACTIUNI */
+.act-btn{width:100%;padding:12px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:6px;transition:all .2s}
+.act-btn:active{opacity:.8}
+.act-btn.green{background:rgba(0,230,77,.12);border:1px solid rgba(0,230,77,.25);color:#00e64d}
+.act-btn.blue{background:rgba(0,180,255,.12);border:1px solid rgba(0,180,255,.25);color:#00b4ff}
+.act-btn.red{background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.2);color:#ff6464}
+.act-btn.white{background:#fff;border:none;color:#000}
+
+/* TAXA INPUT */
+.taxa-wrap{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.taxa-input{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px 12px;color:#fff;outline:none;text-align:center}
+.taxa-lbl{font-size:11px;color:rgba(255,255,255,.4)}
+
+/* BLOCATOARE */
+.bl-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:12px;margin-bottom:8px}
+.bl-top{display:flex;align-items:center;gap:10px}
+.bl-id{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:9px;font-weight:700;flex-shrink:0;text-align:center}
+.bl-id.free{background:rgba(0,230,77,.1);border:1px solid rgba(0,230,77,.2);color:#00e64d}
+.bl-id.occ{background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.2);color:#ff6464}
+.bl-name{font-size:13px;font-weight:600;color:#fff}
+.bl-addr{font-size:10px;color:rgba(255,255,255,.3);margin-top:1px}
+.bl-status{padding:5px 12px;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0}
+.bl-status.free{background:rgba(0,230,77,.15);color:#00e64d}
+.bl-status.occ{background:rgba(255,80,80,.15);color:#ff6464}
+
+/* SETARI */
+.set-input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;color:#fff;outline:none;text-align:center;letter-spacing:.2em}
+.info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px}
+.info-lbl{color:rgba(255,255,255,.4)}
+.info-val{color:#fff}
+
+/* STATUS MSG */
+.smsg{padding:10px 14px;border-radius:10px;font-size:12px;margin-bottom:10px;display:none}
+.smsg.ok{background:rgba(0,230,77,.12);border:1px solid rgba(0,230,77,.25);color:#00e64d}
+.smsg.err{background:rgba(255,50,50,.12);border:1px solid rgba(255,50,50,.25);color:#ff5050}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:#1a2030;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{width:30px;height:30px;background:rgba(255,255,255,.08);border:none;border-radius:8px;color:#fff;font-size:14px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- PIN SCREEN -->
+<div id="pin-screen">
+  <div class="pin-logo"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#000"/></svg></div>
+  <div class="pin-title">TireaPark</div>
+  <div class="pin-sub">PANOU DE CONTROL</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+    <div class="pin-dot" id="d4"></div><div class="pin-dot" id="d5"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-btn" onclick="pp('1')">1</button><button class="pin-btn" onclick="pp('2')">2</button><button class="pin-btn" onclick="pp('3')">3</button>
+    <button class="pin-btn" onclick="pp('4')">4</button><button class="pin-btn" onclick="pp('5')">5</button><button class="pin-btn" onclick="pp('6')">6</button>
+    <button class="pin-btn" onclick="pp('7')">7</button><button class="pin-btn" onclick="pp('8')">8</button><button class="pin-btn" onclick="pp('9')">9</button>
+    <button class="pin-btn" style="opacity:0;pointer-events:none"></button><button class="pin-btn" onclick="pp('0')">0</button><button class="pin-btn del" onclick="pd()">⌫</button>
+  </div>
+  <div class="pin-err" id="pin-err"></div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div class="dash-hdr">
+    <div class="dash-logo">TireaPark <span>PANOU ADMIN</span></div>
+    <button class="lock-btn" onclick="lockDash()">🔒</button>
+  </div>
+
+  <!-- STATISTICI -->
+  <div class="page active" id="page-stats">
+    <div class="ptabs">
+      <div class="ptab active" onclick="setPeriod('azi',this)">AZI</div>
+      <div class="ptab" onclick="setPeriod('sapt',this)">SĂPT.</div>
+      <div class="ptab" onclick="setPeriod('luna',this)">LUNĂ</div>
+      <div class="ptab" onclick="setPeriod('an',this)">AN</div>
+    </div>
+    <div class="sg">
+      <div class="sc g"><div class="sv g" id="s-total">0 lei</div><div class="sl">TOTAL ÎNCASAT</div></div>
+      <div class="sc b"><div class="sv b" id="s-profit">0 lei</div><div class="sl">PROFITUL TĂU</div></div>
+      <div class="sc y"><div class="sv y" id="s-proprietari">0 lei</div><div class="sl">PT. PROPRIETARI</div></div>
+      <div class="sc r"><div class="sv r" id="s-taxe">0 lei</div><div class="sl">TAXE PROCESATOR</div></div>
+    </div>
+    <div class="sg">
+      <div class="sc"><div class="sv" id="s-blocatoare">0</div><div class="sl">BLOCATOARE</div></div>
+      <div class="sc g"><div class="sv g" id="s-libere">0</div><div class="sl">LIBERE ACUM</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚙️ TAXA PROCESATOR PLĂȚI</div>
+      <div class="taxa-wrap">
+        <input class="taxa-input" id="taxa-proc" type="number" value="1.5" step="0.1" min="0" max="10" onchange="saveTaxa()">
+        <div class="taxa-lbl">% per tranzacție</div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.3)">Se deduce automat din încasări la calculul decontărilor.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📅 DECONTARE CURENTĂ</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.6)" id="dec-perioada">—</div>
+      <div style="margin-top:6px;font-size:11px;color:rgba(255,255,255,.3)">Următoarea decontare: <span id="next-dec" style="color:#facc15">—</span></div>
+    </div>
+  </div>
+
+  <!-- CLIENȚI -->
+  <div class="page" id="page-clienti">
+    <div style="padding:8px 0;font-size:11px;color:rgba(255,255,255,.35)">Toți proprietarii de locuri înregistrați.</div>
+    <div id="cl-list"><div style="text-align:center;padding:30px;color:rgba(255,255,255,.2)">Se încarcă...</div></div>
+  </div>
+
+  <!-- BLOCATOARE -->
+  <div class="page" id="page-blocatoare">
+    <div style="padding:8px 0;font-size:11px;color:rgba(255,255,255,.35)">Apasă pe status pentru a schimba.</div>
+    <div id="bl-list"><div style="text-align:center;padding:30px;color:rgba(255,255,255,.2)">Se încarcă...</div></div>
+  </div>
+
+  <!-- SETĂRI -->
+  <div class="page" id="page-setari">
+    <div class="smsg" id="set-msg"></div>
+    <div class="card">
+      <div class="card-title">🔐 SCHIMBĂ PIN</div>
+      <div style="margin-bottom:10px;font-size:11px;color:rgba(0,180,255,.7)">📧 Confirmare pe tirea.nor@gmail.com</div>
+      <input class="set-input" id="new-pin1" type="password" inputmode="numeric" maxlength="6" placeholder="PIN nou (6 cifre)" style="margin-bottom:8px">
+      <input class="set-input" id="new-pin2" type="password" inputmode="numeric" maxlength="6" placeholder="Confirmă PIN-ul" style="margin-bottom:8px">
+      <button class="act-btn blue" onclick="reqPinChange()">📧 TRIMITE COD PE EMAIL</button>
+      <div id="pin-code-wrap" style="display:none;margin-top:8px">
+        <input class="set-input" id="email-code" type="text" inputmode="numeric" maxlength="6" placeholder="Cod din email" style="margin-bottom:8px;letter-spacing:.3em">
+        <button class="act-btn white" onclick="confirmPinChange()">✓ CONFIRMĂ SCHIMBAREA</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">ℹ️ SISTEM</div>
+      <div class="info-row"><span class="info-lbl">Versiune</span><span class="info-val">TireaPark v1.0</span></div>
+      <div class="info-row"><span class="info-lbl">Email admin</span><span class="info-val" style="color:#00b4ff">tirea.nor@gmail.com</span></div>
+      <div class="info-row"><span class="info-lbl">Firebase</span><span class="info-val" style="color:#00e64d">● Conectat</span></div>
+      <div class="info-row" style="border:none"><span class="info-lbl">Sesiune</span><span class="info-val">15 minute</span></div>
+    </div>
+    <button class="act-btn red" onclick="lockDash()" style="margin-top:4px">🔒 BLOCHEAZĂ DASHBOARD</button>
+  </div>
+
+  <div id="dash-nav">
+    <div class="dn act" onclick="showPage('stats',this)"><div class="dn-ic">📊</div><div class="dn-lb">STATISTICI</div></div>
+    <div class="dn" onclick="showPage('clienti',this)"><div class="dn-ic">👥</div><div class="dn-lb">CLIENȚI</div></div>
+    <div class="dn" onclick="showPage('blocatoare',this)"><div class="dn-ic">📍</div><div class="dn-lb">BLOCATOARE</div></div>
+    <div class="dn" onclick="showPage('setari',this)"><div class="dn-ic">⚙️</div><div class="dn-lb">SETĂRI</div></div>
+  </div>
+</div>
+
+<!-- MODAL CLIENT DETALII -->
+<div class="modal-overlay" id="cl-modal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span id="modal-title-txt">Client</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="ctabs">
+      <div class="ctab active" onclick="showCTab('date',this)">DATE</div>
+      <div class="ctab" onclick="showCTab('financiar',this)">FINANCIAR</div>
+      <div class="ctab" onclick="showCTab('decontari',this)">DECONTĂRI</div>
+      <div class="ctab" onclick="showCTab('actiuni',this)">ACȚIUNI</div>
+    </div>
+    <div id="ctab-date"></div>
+    <div id="ctab-financiar" style="display:none"></div>
+    <div id="ctab-decontari" style="display:none"></div>
+    <div id="ctab-actiuni" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+var PIN_KEY='tp_pin2';
+var SES_KEY='tp_ses2';
+var TAXA_KEY='tp_taxa';
+var pinInput='';
+var pendingPin=null;
+var emailCode=null;
+var allBlockers=[];
+var currentPeriod='azi';
+var currentClient=null;
+var db=null,fbRef,fbSet,fbUpdate;
+
+// PIN
+function getPin(){return localStorage.getItem(PIN_KEY)||'123456';}
+function getTaxa(){return parseFloat(localStorage.getItem(TAXA_KEY)||'1.5');}
+function saveTaxa(){localStorage.setItem(TAXA_KEY,document.getElementById('taxa-proc').value);renderStats();}
+
+function pp(d){
+  if(pinInput.length>=6)return;
+  pinInput+=d;updateDots();
+  if(pinInput.length===6)setTimeout(checkPin,200);
+}
+function pd(){pinInput=pinInput.slice(0,-1);updateDots();document.getElementById('pin-err').textContent='';}
+function updateDots(){
+  for(var i=0;i<6;i++){var d=document.getElementById('d'+i);d.classList.toggle('filled',i<pinInput.length);d.classList.remove('error');}
+}
+function checkPin(){
+  if(pinInput===getPin()){
+    localStorage.setItem(SES_KEY,Date.now().toString());
+    document.getElementById('pin-screen').style.display='none';
+    document.getElementById('main').style.display='block';
+    initFirebase();
+  } else {
+    document.querySelectorAll('.pin-dot').forEach(d=>d.classList.add('error'));
+    document.getElementById('pin-err').textContent='PIN incorect!';
+    pinInput='';
+    setTimeout(()=>{updateDots();document.getElementById('pin-err').textContent='';},1400);
+  }
+}
+function lockDash(){
+  localStorage.removeItem(SES_KEY);
+  document.getElementById('main').style.display='none';
+  document.getElementById('pin-screen').style.display='flex';
+  pinInput='';updateDots();
+}
+
+// Auto-unlock dacă sesiunea e recentă
+(function(){
+  var s=localStorage.getItem(SES_KEY);
+  if(s&&Date.now()-parseInt(s)<15*60*1000){
+    document.getElementById('pin-screen').style.display='none';
+    document.getElementById('main').style.display='block';
+    initFirebase();
+  }
+})();
+
+// NAV
+function showPage(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.dn').forEach(d=>d.classList.remove('act'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('act');
+}
+
+// PERIOD
+function setPeriod(p,el){
+  currentPeriod=p;
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderStats();
+}
+
+// FIREBASE
+async function initFirebase(){
+  const{initializeApp}=await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js");
+  const{getDatabase,ref,set,onValue,update}=await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js");
+  const app=initializeApp({
+    apiKey:"AIzaSyDF63PQ9s2AG9_8ho9u6v-myzDrs_SrtbY",
+    authDomain:"tireapark.firebaseapp.com",
+    databaseURL:"https://tireapark-default-rtdb.firebaseio.com",
+    projectId:"tireapark",
+    storageBucket:"tireapark.firebasestorage.app",
+    messagingSenderId:"503087510644",
+    appId:"1:503087510644:web:18d5e122c67afe110e8d21"
+  });
+  db=getDatabase(app);fbRef=ref;fbSet=set;fbUpdate=update;
+  onValue(ref(db,'blocatoare'),snap=>{
+    allBlockers=Object.values(snap.val()||{});
+    renderAll();
+  });
+  updatePeriod();
+  document.getElementById('taxa-proc').value=getTaxa();
+}
+
+function renderAll(){renderStats();renderClients();renderBlockers();}
+
+// STATS
+function renderStats(){
+  var taxa=getTaxa()/100;
+  var total=allBlockers.reduce((a,b)=>a+(b.incasari_total||0),0);
+  var taxeTotal=total*taxa;
+  var netTotal=total-taxeTotal;
+  var profitMeu=allBlockers.reduce((a,b)=>{
+    var inc=b.incasari_total||0;
+    var proc=(b.proprietar?.procent_admin||30)/100;
+    return a+inc*proc;
+  },0)-taxeTotal;
+  var ptProp=netTotal-profitMeu;
+
+  document.getElementById('s-total').textContent=Math.round(total)+' lei';
+  document.getElementById('s-profit').textContent=Math.round(profitMeu)+' lei';
+  document.getElementById('s-proprietari').textContent=Math.round(ptProp)+' lei';
+  document.getElementById('s-taxe').textContent=Math.round(taxeTotal)+' lei';
+  document.getElementById('s-blocatoare').textContent=allBlockers.length;
+  document.getElementById('s-libere').textContent=allBlockers.filter(b=>b.free).length;
+}
+
+// CLIENTS
+function renderClients(){
+  var el=document.getElementById('cl-list');
+  if(!allBlockers.length){el.innerHTML='<div style="text-align:center;padding:30px;color:rgba(255,255,255,.2)">Nu există clienți înregistrați</div>';return;}
+  el.innerHTML=allBlockers.map(b=>{
+    var p=b.proprietar||{};
+    var inc=b.incasari_total||0;
+    var proc=p.procent_admin||30;
+    var taxa=getTaxa()/100;
+    var taxaSum=Math.round(inc*taxa);
+    var net=inc-taxaSum;
+    var profitMeu=Math.round(net*proc/100);
+    var ptProp=net-profitMeu;
+    var initiale=(p.nume||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    return `<div class="cl-item" onclick="openClient('${b.id}')">
+      <div class="cl-header">
+        <div class="cl-avatar">${initiale}</div>
+        <div style="flex:1;min-width:0">
+          <div class="cl-name">${p.nume||'Proprietar necunoscut'}</div>
+          <div class="cl-parcare">📍 ${b.name||''} · ${b.addr||''}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:2px">${p.telefon||''}</div>
+        </div>
+        <div class="cl-garantie ${p.garantie?'yes':'no'}">${p.garantie?'GAR. ✓':'FĂRĂ GAR.'}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+        <div style="background:rgba(0,230,77,.06);border:1px solid rgba(0,230,77,.12);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#00e64d">${inc} lei</div>
+          <div style="font-size:8px;color:rgba(255,255,255,.3);margin-top:2px">ÎNCASAT</div>
+        </div>
+        <div style="background:rgba(0,180,255,.06);border:1px solid rgba(0,180,255,.12);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#00b4ff">${profitMeu} lei</div>
+          <div style="font-size:8px;color:rgba(255,255,255,.3);margin-top:2px">PROFIT TĂU</div>
+        </div>
+        <div style="background:rgba(250,204,21,.06);border:1px solid rgba(250,204,21,.12);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#facc15">${ptProp} lei</div>
+          <div style="font-size:8px;color:rgba(255,255,255,.3);margin-top:2px">PT. PROP.</div>
+        </div>
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,.25);text-align:right">Apasă pentru detalii →</div>
+    </div>`;
+  }).join('');
+}
+
+// OPEN CLIENT MODAL
+function openClient(id){
+  var b=allBlockers.find(x=>x.id===id);
+  if(!b)return;
+  currentClient=b;
+  var p=b.proprietar||{};
+  document.getElementById('modal-title-txt').textContent=p.nume||'Client';
+
+  var inc=b.incasari_total||0;
+  var proc_prop=p.procent_proprietar||70;
+  var proc_admin=p.procent_admin||30;
+  var taxa=getTaxa()/100;
+  var taxaSum=Math.round(inc*taxa*100)/100;
+  var net=inc-taxaSum;
+  var ptProp=Math.round(net*proc_prop/100*100)/100;
+  var profitMeu=Math.round(net*proc_admin/100*100)/100;
+  var costTransfer=5;
+  var netProp=Math.max(0,ptProp-costTransfer);
+
+  // TAB DATE
+  document.getElementById('ctab-date').innerHTML=`
+    <div class="dr"><span class="dr-lbl">Nume</span><span class="dr-val">${p.nume||'—'}</span></div>
+    <div class="dr"><span class="dr-lbl">Telefon</span><span class="dr-val">${p.telefon||'—'}</span></div>
+    <div class="dr"><span class="dr-lbl">WhatsApp</span><span class="dr-val">${p.whatsapp||'—'}</span></div>
+    <div class="dr"><span class="dr-lbl">Email</span><span class="dr-val">${p.email||'—'}</span></div>
+    <div class="dr"><span class="dr-lbl">Bancă</span><span class="dr-val">${p.banca||'—'}</span></div>
+    <div class="dr"><span class="dr-lbl">CNP/CUI</span><span class="dr-val">${p.cnp||'—'}</span></div>
+    <div class="dr"><span class="dr-lbl">Garanție</span><span class="dr-val ${p.garantie?'g':'y'}">${p.garantie?'✓ 800 lei plătită':'✗ Fără garanție'}</span></div>
+    <div class="dr"><span class="dr-lbl">Procent proprietar</span><span class="dr-val">${proc_prop}%</span></div>
+    <div class="dr"><span class="dr-lbl">Procent admin</span><span class="dr-val b">${proc_admin}%</span></div>
+    <div class="dr"><span class="dr-lbl">Parcare</span><span class="dr-val">${b.name||'—'}</span></div>
+    <div class="dr"><span class="dr-lbl">Adresă</span><span class="dr-val">${b.addr||'—'}</span></div>
+    <div class="dr"><span class="dr-lbl">Preț/oră</span><span class="dr-val">${b.price||0} lei</span></div>
+    <div class="dr" style="border:none"><span class="dr-lbl">Program</span><span class="dr-val">${b.hours||'—'}</span></div>
+    ${p.iban?`<div class="iban-box" onclick="copyIban('${p.iban}')"><span class="iban-txt">IBAN: ${p.iban}</span><span class="iban-copy">📋</span></div>`:''}
+  `;
+
+  // TAB FINANCIAR
+  document.getElementById('ctab-financiar').innerHTML=`
+    <div class="fin-box">
+      <div class="fin-title">TOTAL ÎNCASAT</div>
+      <div class="fin-row"><span class="fin-lbl">Brut total</span><span class="fin-val" style="color:#fff">${inc} lei</span></div>
+      <div class="fin-row"><span class="fin-lbl">Taxa procesator (${getTaxa()}%)</span><span class="fin-val" style="color:#ff6464">- ${taxaSum} lei</span></div>
+      <hr class="fin-sep">
+      <div class="fin-total"><span class="fin-total-lbl">Net disponibil</span><span class="fin-total-val" style="color:#fff">${net} lei</span></div>
+    </div>
+    <div class="fin-box">
+      <div class="fin-title">ÎMPĂRȚIRE (${proc_prop}% / ${proc_admin}%)</div>
+      <div class="fin-row"><span class="fin-lbl">Cota proprietar (${proc_prop}%)</span><span class="fin-val" style="color:#facc15">${ptProp} lei</span></div>
+      <div class="fin-row"><span class="fin-lbl">Cost transfer bancar</span><span class="fin-val" style="color:#ff6464">- ${costTransfer} lei</span></div>
+      <hr class="fin-sep">
+      <div class="fin-total"><span class="fin-total-lbl">DE PLĂTIT NET</span><span class="fin-total-val" style="color:#00e64d">${netProp} lei</span></div>
+    </div>
+    <div class="fin-box">
+      <div class="fin-title">PROFITUL TĂU</div>
+      <div class="fin-total"><span class="fin-total-lbl">Câștig net</span><span class="fin-total-val" style="color:#00b4ff">${profitMeu} lei</span></div>
+    </div>
+    <div style="margin-top:8px">
+      <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:6px">ADAUGĂ ÎNCASARE MANUALĂ</div>
+      <div style="display:flex;gap:8px">
+        <input id="inc-manual" type="number" placeholder="Lei" style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px;color:#fff;outline:none">
+        <button onclick="addIncasare('${b.id}')" style="padding:10px 16px;background:rgba(0,230,77,.15);border:1px solid rgba(0,230,77,.25);border-radius:8px;color:#00e64d;font-weight:700;cursor:pointer">+ ADAUGĂ</button>
+      </div>
+    </div>
+  `;
+
+  // TAB DECONTARI
+  var istoricDec=b.istoricDecontari||{};
+  var decItems=Object.values(istoricDec);
+  document.getElementById('ctab-decontari').innerHTML=`
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:8px">DECONTARE CURENTĂ</div>
+      <div class="fin-box">
+        <div class="fin-row"><span class="fin-lbl">Sumă de plătit</span><span class="fin-val" style="color:#00e64d;font-size:16px">${netProp} lei</span></div>
+        <div class="fin-row"><span class="fin-lbl">Perioadă</span><span class="fin-val" id="dec-per-modal">—</span></div>
+      </div>
+      ${p.iban?`<div class="iban-box" onclick="copyIban('${p.iban}')"><span class="iban-txt">${p.iban}</span><span class="iban-copy">📋 COPIAZĂ IBAN</span></div>`:'<div style="font-size:11px;color:#ff6464;margin:8px 0">⚠ IBAN lipsă!</div>'}
+      <button onclick="marcheazaPlatit('${b.id}',${netProp})" class="act-btn green" style="margin-top:8px">${b.proprietar?.platit_curent?'✓ DEJA PLĂTIT':'💸 MARCHEAZĂ CA PLĂTIT'}</button>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:8px">ISTORIC DECONTĂRI</div>
+    ${decItems.length?decItems.reverse().map(d=>`
+      <div class="dec-hist-item">
+        <div><div class="dec-hist-period">${d.perioada||'—'}</div><div style="font-size:9px;color:rgba(255,255,255,.25)">${d.data||''}</div></div>
+        <div style="text-align:right">
+          <div class="dec-hist-suma">${d.suma||0} lei</div>
+          <div class="dec-hist-status ${d.platit?'platit':'neplatit'}">${d.platit?'PLĂTIT':'NEPLETIT'}</div>
+        </div>
+      </div>`).join(''):'<div style="text-align:center;padding:16px;color:rgba(255,255,255,.2);font-size:12px">Nu există decontări anterioare</div>'}
+  `;
+  setTimeout(()=>{
+    var el=document.getElementById('dec-per-modal');
+    if(el)el.textContent=getPeriodText();
+  },100);
+
+  // TAB ACTIUNI
+  document.getElementById('ctab-actiuni').innerHTML=`
+    <button onclick="toggleStatusClient('${b.id}',${b.free})" class="act-btn ${b.free?'red':'green'}">${b.free?'🔴 MARCHEAZĂ OCUPAT':'🟢 MARCHEAZĂ LIBER'}</button>
+    <button onclick="copyIban('${p.iban||''}')" class="act-btn blue">📋 COPIAZĂ IBAN</button>
+    <a href="tel:${p.telefon||''}" style="display:block"><button class="act-btn blue" style="width:100%">📞 SUNĂ PROPRIETARUL</button></a>
+    <a href="https://wa.me/${(p.whatsapp||'').replace(/[^0-9]/g,'')}" target="_blank" style="display:block"><button class="act-btn green" style="width:100%;background:rgba(37,211,102,.12);border-color:rgba(37,211,102,.25);color:#25d366">💬 WHATSAPP</button></a>
+    <button onclick="if(confirm('Ștergi blocatorul ${b.id}?'))deleteBlocker('${b.id}')" class="act-btn red" style="margin-top:8px">🗑️ ȘTERGE BLOCATORUL</button>
+  `;
+
+  document.getElementById('cl-modal').classList.add('show');
+  showCTab('date',document.querySelector('.ctab'));
+}
+
+function closeModal(){document.getElementById('cl-modal').classList.remove('show');currentClient=null;}
+
+function showCTab(name,el){
+  ['date','financiar','decontari','actiuni'].forEach(t=>{document.getElementById('ctab-'+t).style.display=t===name?'block':'none';});
+  document.querySelectorAll('.ctab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+
+async function addIncasare(id){
+  var val=parseFloat(document.getElementById('inc-manual').value);
+  if(!val||val<=0){alert('Introdu o sumă validă!');return;}
+  var b=allBlockers.find(x=>x.id===id);
+  var nou=(b.incasari_total||0)+val;
+  await fbSet(fbRef(db,'blocatoare/'+id+'/incasari_total'),nou);
+  document.getElementById('inc-manual').value='';
+  closeModal();
+}
+
+async function marcheazaPlatit(id,suma){
+  if(!confirm('Confirmi plata de '+suma+' lei?'))return;
+  var now=new Date();
+  var decKey='dec_'+Date.now();
+  await fbUpdate(fbRef(db,'blocatoare/'+id),{
+    'proprietar/platit_curent':true,
+    'incasari_total':0,
+    ['istoricDecontari/'+decKey]:{
+      suma:suma,
+      perioada:getPeriodText(),
+      data:now.toLocaleDateString('ro-RO'),
+      platit:true,
+      ts:Date.now()
+    }
+  });
+  closeModal();
+}
+
+async function toggleStatusClient(id,wasFree){
+  await fbSet(fbRef(db,'blocatoare/'+id+'/free'),!wasFree);
+  closeModal();
+}
+
+async function deleteBlocker(id){
+  const{getDatabase,ref,remove}=await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js");
+  await remove(fbRef(db,'blocatoare/'+id));
+  closeModal();
+}
+
+function copyIban(iban){
+  if(!iban){alert('IBAN lipsă!');return;}
+  navigator.clipboard?.writeText(iban).then(()=>alert('IBAN copiat!')).catch(()=>alert('IBAN: '+iban));
+}
+
+// BLOCATOARE
+function renderBlockers(){
+  var el=document.getElementById('bl-list');
+  if(!allBlockers.length){el.innerHTML='<div style="text-align:center;padding:30px;color:rgba(255,255,255,.2)">Nu există blocatoare</div>';return;}
+  el.innerHTML=allBlockers.map(b=>`
+    <div class="bl-item">
+      <div class="bl-top">
+        <div class="bl-id ${b.free?'free':'occ'}">${(b.id||'').split('-').pop()}</div>
+        <div style="flex:1;min-width:0">
+          <div class="bl-name">${b.name||'Fără nume'}</div>
+          <div class="bl-addr">${b.addr||''}</div>
+        </div>
+        <div class="bl-status ${b.free?'free':'occ'}" onclick="toggleBl('${b.id}',${b.free})">${b.free?'LIBER':'OCUPAT'}</div>
+      </div>
+    </div>`).join('');
+}
+
+async function toggleBl(id,wasFree){await fbSet(fbRef(db,'blocatoare/'+id+'/free'),!wasFree);}
+
+// PERIOD
+function getPeriodText(){
+  var now=new Date(),m=now.getMonth(),y=now.getFullYear();
+  var s=new Date(y,m-m%2,1);
+  var e=new Date(y,m-m%2+2,0);
+  return s.toLocaleDateString('ro-RO',{day:'numeric',month:'short'})+' — '+e.toLocaleDateString('ro-RO',{day:'numeric',month:'short',year:'numeric'});
+}
+
+function updatePeriod(){
+  document.getElementById('dec-perioada').textContent=getPeriodText();
+  var now=new Date(),m=now.getMonth(),y=now.getFullYear();
+  var next=new Date(y,m-m%2+2,1);
+  document.getElementById('next-dec').textContent=next.toLocaleDateString('ro-RO',{day:'numeric',month:'long',year:'numeric'});
+}
+
+// PIN CHANGE
+var pendingPinVal=null,emailCodeVal=null;
+function reqPinChange(){
+  var np=document.getElementById('new-pin1').value;
+  var cp=document.getElementById('new-pin2').value;
+  if(np.length!==6||!/^\d+$/.test(np)){showSetMsg('PIN-ul trebuie să aibă 6 cifre!','err');return;}
+  if(np!==cp){showSetMsg('PIN-urile nu coincid!','err');return;}
+  pendingPinVal=np;
+  emailCodeVal=Math.floor(100000+Math.random()*900000).toString();
+  showSetMsg('Cod generat: '+emailCodeVal+' (integrare email în curând)','ok');
+  document.getElementById('pin-code-wrap').style.display='block';
+}
+function confirmPinChange(){
+  if(document.getElementById('email-code').value!==emailCodeVal){showSetMsg('Cod incorect!','err');return;}
+  localStorage.setItem(PIN_KEY,pendingPinVal);
+  pendingPinVal=null;emailCodeVal=null;
+  document.getElementById('new-pin1').value='';
+  document.getElementById('new-pin2').value='';
+  document.getElementById('email-code').value='';
+  document.getElementById('pin-code-wrap').style.display='none';
+  showSetMsg('✓ PIN schimbat cu succes!','ok');
+}
+function showSetMsg(msg,type){
+  var el=document.getElementById('set-msg');
+  el.textContent=msg;el.className='smsg '+type;el.style.display='block';
+  setTimeout(()=>el.style.display='none',5000);
+}
+
+// Close modal on overlay click
+document.getElementById('cl-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+</script>
+</body>
+</html>
