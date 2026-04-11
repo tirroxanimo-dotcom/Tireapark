@@ -19,7 +19,7 @@ input,button,select,textarea{font-size:16px!important}
 .badge-admin{background:rgba(255,100,50,.15);border:1px solid rgba(255,100,50,.3);color:#ff6432;font-size:9px;font-weight:700;padding:3px 8px;border-radius:10px;letter-spacing:.08em;margin-left:auto}
 .card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px;margin-bottom:12px}
 .card-title{font-size:10px;color:rgba(255,255,255,.4);letter-spacing:.1em;margin-bottom:12px;font-weight:600}
-.scan-btn{width:100%;padding:18px;background:linear-gradient(135deg,#00e64d,#00b33a);border:none;border-radius:14px;color:#000;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.04em;margin-bottom:12px}
+.scan-btn{width:100%;padding:18px;background:linear-gradient(135deg,#00e64d,#00b33a);border:none;border-radius:14px;color:#000;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px}
 .scan-btn:active{opacity:.8}
 .gps-row{display:flex;align-items:center;gap:10px;background:rgba(0,200,100,.08);border:1px solid rgba(0,200,100,.2);border-radius:10px;padding:12px}
 .gps-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
@@ -34,11 +34,10 @@ input,button,select,textarea{font-size:16px!important}
 .photo-btn{width:100%;padding:14px;background:rgba(255,255,255,.05);border:1.5px dashed rgba(255,255,255,.2);border-radius:10px;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
 #photo-preview{width:100%;height:160px;object-fit:cover;border-radius:10px;display:none;margin-top:8px}
 .qr-wrap{text-align:center;padding:16px 0}
-.qr-wrap img{border-radius:8px;background:#fff;padding:8px;width:220px;height:220px}
 .qr-id{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#fff;margin-top:10px}
 .qr-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:4px}
 .print-btn{margin-top:14px;padding:12px 24px;background:#fff;border:none;border-radius:10px;color:#000;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
-.save-btn{width:100%;padding:18px;background:#fff;border:none;border-radius:14px;color:#000;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.04em;margin-top:4px}
+.save-btn{width:100%;padding:18px;background:#fff;border:none;border-radius:14px;color:#000;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px}
 .save-btn:active{background:#e0e0e0}
 .save-btn:disabled{background:rgba(255,255,255,.2);color:rgba(255,255,255,.4)}
 .status{padding:12px 14px;border-radius:10px;font-size:13px;margin-bottom:12px;display:none}
@@ -88,7 +87,7 @@ input,button,select,textarea{font-size:16px!important}
   <div class="card" id="qr-card" style="display:none">
     <div class="card-title">🏷️ COD QR BLOCATOR</div>
     <div class="qr-wrap">
-      <img id="qr-img" src="" alt="QR Code">
+      <canvas id="qr-canvas" style="background:#fff;border-radius:8px;padding:8px;width:220px;height:220px"></canvas>
       <div class="qr-id" id="qr-id-display">BL-000</div>
       <div class="qr-sub">Printează și lipește pe blocator</div>
       <button class="print-btn" onclick="printQR()">🖨️ PRINTEAZĂ QR</button>
@@ -99,7 +98,7 @@ input,button,select,textarea{font-size:16px!important}
     <div class="card-title">📍 PAS 2 — POZIȚIE GPS</div>
     <div class="gps-row">
       <div class="gps-dot" id="gps-dot" style="background:#facc15"></div>
-      <div class="gps-txt" id="gps-txt">Apasă "Actualizează GPS"</div>
+      <div class="gps-txt" id="gps-txt">Apasă butonul de mai jos</div>
       <div class="gps-coords" id="gps-coords"></div>
     </div>
     <button onclick="getGPS()" style="width:100%;margin-top:10px;padding:12px;background:rgba(250,204,21,.1);border:1px solid rgba(250,204,21,.25);border-radius:10px;color:#facc15;font-size:13px;font-weight:600;cursor:pointer">📍 OBȚINE POZIȚIA GPS</button>
@@ -149,211 +148,274 @@ input,button,select,textarea{font-size:16px!important}
 </div>
 
 <script>
-let currentId = null;
-let currentLat = null;
-let currentLng = null;
-let scanStream = null;
-let scanInterval = null;
-let photoBase64 = null;
-let db = null;
-let fbRef, fbSet, fbRemove;
+// ============================================================
+// QR CODE GENERATOR — 100% JavaScript pur, fără librării
+// Implementare simplificată pentru text scurt (ID blocator)
+// ============================================================
+var QRGen = (function(){
+  // Tabel de corecție Galois Field
+  var GF=[];var GFlog=[];var GFexp=[];
+  function gfInit(){var x=1;for(var i=0;i<256;i++){GFexp[i]=x;GFlog[x]=i;x<<=1;if(x>=256)x^=0x11d;}GFexp[255]=GFexp[0];GFlog[0]=0;}
+  function gfMul(a,b){if(a==0||b==0)return 0;return GFexp[(GFlog[a]+GFlog[b])%255];}
+  function gfPoly(e){var p=[1];for(var i=0;i<e;i++){var np=[0];for(var j=0;j<p.length+1;j++){var c=(j<p.length?p[j]:0);var n=(j>0?gfMul(p[j-1],GFexp[i]):0);np[j]=(c^n);}p=np;}return p;}
+  function gfPolyDiv(msg,gen){var r=msg.slice();for(var i=0;i<msg.length-gen.length+1;i++){var c=r[i];if(c!=0)for(var j=1;j<gen.length;j++)if(gen[j]!=0)r[i+j]^=gfMul(gen[j],c);}return r.slice(msg.length-gen.length+1);}
+  gfInit();
 
-/* FIREBASE */
-async function initFirebase() {
-  const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js");
-  const { getDatabase, ref, set, onValue, remove } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js");
-  const app = initializeApp({
-    apiKey: "AIzaSyDF63PQ9s2AG9_8ho9u6v-myzDrs_SrtbY",
-    authDomain: "tireapark.firebaseapp.com",
-    databaseURL: "https://tireapark-default-rtdb.firebaseio.com",
-    projectId: "tireapark",
-    storageBucket: "tireapark.firebasestorage.app",
-    messagingSenderId: "503087510644",
-    appId: "1:503087510644:web:18d5e122c67afe110e8d21"
-  });
-  db = getDatabase(app);
-  fbRef = ref; fbSet = set; fbRemove = remove;
+  // QR Version 2, ECC Level M — 25x25 modules, max ~26 chars alphanumeric
+  var SIZE=25;
+  function makeMatrix(){var m=[];for(var i=0;i<SIZE;i++){m[i]=[];for(var j=0;j<SIZE;j++)m[i][j]=-1;}return m;}
+  function setFinder(m,r,c){for(var i=-1;i<=7;i++)for(var j=-1;j<=7;j++){if(r+i<0||r+i>=SIZE||c+j<0||c+j>=SIZE)continue;m[r+i][c+j]=((i>=0&&i<=6&&(j==0||j==6))||(j>=0&&j<=6&&(i==0||i==6))||(i>=2&&i<=4&&j>=2&&j<=4))?1:0;}}
+  function setTiming(m){for(var i=8;i<SIZE-8;i++){m[6][i]=m[i][6]=(i%2==0)?1:0;}}
+  function setAlignment(m){var c=18; // version 2 alignment at (18,18) relative
+    var positions=[[18,18]];
+    for(var p=0;p<positions.length;p++){var r=positions[p][0],cc=positions[p][1];
+      for(var i=-2;i<=2;i++)for(var j=-2;j<=2;j++){m[r+i][cc+j]=(i==-2||i==2||j==-2||j==2||i==0&&j==0)?1:0;}}}
+  function reserveFormat(m){var fmt=[[0,8],[1,8],[2,8],[3,8],[4,8],[5,8],[7,8],[8,8],[8,7],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0],[8,SIZE-1],[8,SIZE-2],[8,SIZE-3],[8,SIZE-4],[8,SIZE-5],[8,SIZE-6],[8,SIZE-7],[SIZE-8,8],[SIZE-7,8],[SIZE-6,8],[SIZE-5,8],[SIZE-4,8],[SIZE-3,8],[SIZE-2,8],[SIZE-1,8]];for(var i=0;i<fmt.length;i++)m[fmt[i][0]][fmt[i][1]]=0;}
 
-  onValue(ref(db, 'blocatoare'), snap => {
-    const data = snap.val() || {};
-    const list = Object.values(data);
-    document.getElementById('list-count').textContent = list.length;
-    const el = document.getElementById('blocker-list');
-    if (!list.length) {
-      el.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,.2);font-size:13px">Nu există blocatoare înregistrate</div>';
-      return;
+  // Encode alphanumeric
+  var ALPHANUM='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+  function encodeAlphaNum(s){
+    var bits=[];
+    function addBits(v,n){for(var i=n-1;i>=0;i--)bits.push((v>>i)&1);}
+    addBits(0b0010,4); // mode alphanumeric
+    addBits(s.length,9); // char count
+    for(var i=0;i<s.length-1;i+=2){
+      var v=ALPHANUM.indexOf(s[i])*45+ALPHANUM.indexOf(s[i+1]);
+      addBits(v,11);
     }
-    el.innerHTML = list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).map(b=>`
+    if(s.length%2==1)addBits(ALPHANUM.indexOf(s[s.length-1]),6);
+    addBits(0,4); // terminator
+    while(bits.length%8)bits.push(0);
+    // Data capacity version 2 M = 28 codewords
+    var bytes=[];for(var i=0;i<bits.length;i+=8){var b=0;for(var j=0;j<8;j++)b=(b<<1)|bits[i+j];bytes.push(b);}
+    var pad=[0xEC,0x11];while(bytes.length<28)bytes.push(pad[(bytes.length-Math.ceil(bits.length/8))%2]);
+    return bytes;
+  }
+
+  function addECC(data){
+    // Version 2 M: 1 block, 28 data + 16 EC codewords
+    var gen=gfPoly(16);
+    var padded=data.slice();while(padded.length<28+16)padded.push(0);
+    var ec=gfPolyDiv(padded,gen);
+    return data.concat(ec.slice(0,16));
+  }
+
+  function placeData(m,codewords){
+    var bits=[];
+    for(var i=0;i<codewords.length;i++)for(var b=7;b>=0;b--)bits.push((codewords[i]>>b)&1);
+    var idx=0;
+    var up=true;
+    for(var col=SIZE-1;col>=1;col-=2){
+      if(col==6)col=5;
+      for(var row=0;row<SIZE;row++){
+        var r=up?SIZE-1-row:row;
+        for(var c=0;c<2;c++){
+          var cc=col-c;
+          if(m[r][cc]==-1){
+            m[r][cc]=idx<bits.length?bits[idx++]:0;
+          }
+        }
+      }
+      up=!up;
+    }
+  }
+
+  function applyMask(m){
+    // Mask pattern 0: (row+col)%2==0
+    for(var r=0;r<SIZE;r++)for(var c=0;c<SIZE;c++)
+      if(m[r][c]!=-1&&m[r][c]!==undefined&&(r+c)%2==0)m[r][c]^=1;
+  }
+
+  function setFormatInfo(m){
+    // Format: ECC level M (01), mask 0 (000) => 01000 => with BCH = 0100110111011100
+    var fmt=[0,1,0,0,1,1,0,1,1,1,0,1,1,1,0,0]; // precomputed for M+mask0
+    var fmtPos=[[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
+    var fmtPos2=[[SIZE-1,8],[SIZE-2,8],[SIZE-3,8],[SIZE-4,8],[SIZE-5,8],[SIZE-6,8],[SIZE-7,8],[8,SIZE-8],[8,SIZE-7],[8,SIZE-6],[8,SIZE-5],[8,SIZE-4],[8,SIZE-3],[8,SIZE-2],[8,SIZE-1]];
+    for(var i=0;i<15;i++){m[fmtPos[i][0]][fmtPos[i][1]]=fmt[i];m[fmtPos2[i][0]][fmtPos2[i][1]]=fmt[i];}
+    m[SIZE-8][8]=1; // dark module
+  }
+
+  return {
+    generate: function(text, canvas){
+      var s=text.toUpperCase().replace(/[^0-9A-Z $%*+\-.\/:]/g,'');
+      if(s.length>26)s=s.substring(0,26);
+      var data=encodeAlphaNum(s);
+      var codewords=addECC(data);
+      var m=makeMatrix();
+      setFinder(m,0,0);setFinder(m,0,SIZE-7);setFinder(m,SIZE-7,0);
+      setTiming(m);setAlignment(m);reserveFormat(m);
+      placeData(m,codewords);applyMask(m);setFormatInfo(m);
+      // Draw
+      var size=220;var mod=Math.floor(size/SIZE);var off=Math.floor((size-mod*SIZE)/2);
+      canvas.width=size;canvas.height=size;
+      var ctx=canvas.getContext('2d');
+      ctx.fillStyle='#ffffff';ctx.fillRect(0,0,size,size);
+      ctx.fillStyle='#000000';
+      for(var r=0;r<SIZE;r++)for(var c=0;c<SIZE;c++)
+        if(m[r][c]===1)ctx.fillRect(off+c*mod,off+r*mod,mod,mod);
+    }
+  };
+})();
+
+// ============================================================
+var currentId=null,currentLat=null,currentLng=null;
+var scanStream=null,scanInterval=null,photoBase64=null;
+var db=null,fbRef,fbSet,fbRemove;
+
+async function initFirebase(){
+  const {initializeApp}=await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js");
+  const {getDatabase,ref,set,onValue,remove}=await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js");
+  const app=initializeApp({
+    apiKey:"AIzaSyDF63PQ9s2AG9_8ho9u6v-myzDrs_SrtbY",
+    authDomain:"tireapark.firebaseapp.com",
+    databaseURL:"https://tireapark-default-rtdb.firebaseio.com",
+    projectId:"tireapark",
+    storageBucket:"tireapark.firebasestorage.app",
+    messagingSenderId:"503087510644",
+    appId:"1:503087510644:web:18d5e122c67afe110e8d21"
+  });
+  db=getDatabase(app);fbRef=ref;fbSet=set;fbRemove=remove;
+  onValue(ref(db,'blocatoare'),snap=>{
+    const data=snap.val()||{};
+    const list=Object.values(data);
+    document.getElementById('list-count').textContent=list.length;
+    const el=document.getElementById('blocker-list');
+    if(!list.length){el.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,.2);font-size:13px">Nu există blocatoare înregistrate</div>';return;}
+    el.innerHTML=list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).map(b=>`
       <div class="blocker-item">
         <div class="blocker-num">${(b.id||'').split('-').pop()}</div>
         <div class="blocker-info">
           <div class="blocker-name">${b.name||'Fără nume'}</div>
-          <div class="blocker-addr">${b.addr||''} · ${b.lat||''},${b.lng||''}</div>
+          <div class="blocker-addr">${b.addr||''}</div>
         </div>
         <div class="blocker-del" onclick="deleteBlocker('${b.id}')">✕</div>
-      </div>
-    `).join('');
+      </div>`).join('');
   });
 }
 initFirebase();
 
-/* QR — folosim Google Charts API, funcționează garantat fără librării externe */
-function generateQRImg(text) {
-  const size = 220;
-  const url = `https://chart.googleapis.com/chart?cht=qr&chs=${size}x${size}&chl=${encodeURIComponent(text)}&choe=UTF-8&chld=M|2`;
-  document.getElementById('qr-img').src = url;
-}
-
-function generateNewQR() {
-  const id = 'BL-' + Date.now().toString(36).toUpperCase().slice(-6);
+function generateNewQR(){
+  const id='BL-'+Date.now().toString(36).toUpperCase().slice(-6);
   setCurrentId(id);
 }
 
-function setCurrentId(id) {
-  currentId = id;
-  document.getElementById('qr-id-display').textContent = id;
-  document.getElementById('qr-card').style.display = 'block';
-  document.getElementById('gps-card').style.display = 'block';
-  document.getElementById('form-card').style.display = 'block';
-  generateQRImg(id);
-  setTimeout(() => document.getElementById('qr-card').scrollIntoView({ behavior: 'smooth' }), 100);
+function setCurrentId(id){
+  currentId=id;
+  document.getElementById('qr-id-display').textContent=id;
+  document.getElementById('qr-card').style.display='block';
+  document.getElementById('gps-card').style.display='block';
+  document.getElementById('form-card').style.display='block';
+  const canvas=document.getElementById('qr-canvas');
+  QRGen.generate(id,canvas);
+  setTimeout(()=>document.getElementById('qr-card').scrollIntoView({behavior:'smooth'}),100);
 }
 
-/* GPS */
-function getGPS() {
-  document.getElementById('gps-dot').style.background = '#facc15';
-  document.getElementById('gps-txt').textContent = 'Se obține poziția GPS...';
-  document.getElementById('gps-coords').textContent = '';
-  if (!navigator.geolocation) {
-    document.getElementById('gps-txt').textContent = 'GPS indisponibil';
-    return;
-  }
+function getGPS(){
+  document.getElementById('gps-dot').style.background='#facc15';
+  document.getElementById('gps-txt').textContent='Se obține poziția GPS...';
+  document.getElementById('gps-coords').textContent='';
+  if(!navigator.geolocation){document.getElementById('gps-txt').textContent='GPS indisponibil';return;}
   navigator.geolocation.getCurrentPosition(
-    pos => {
-      currentLat = pos.coords.latitude.toFixed(7);
-      currentLng = pos.coords.longitude.toFixed(7);
-      document.getElementById('gps-dot').style.background = '#00e64d';
-      document.getElementById('gps-txt').textContent = 'Poziție obținută ✓';
-      document.getElementById('gps-coords').textContent = currentLat + ', ' + currentLng;
+    pos=>{
+      currentLat=pos.coords.latitude.toFixed(7);
+      currentLng=pos.coords.longitude.toFixed(7);
+      document.getElementById('gps-dot').style.background='#00e64d';
+      document.getElementById('gps-txt').textContent='Poziție obținută ✓';
+      document.getElementById('gps-coords').textContent=currentLat+', '+currentLng;
     },
-    err => {
-      document.getElementById('gps-dot').style.background = '#ff5050';
-      document.getElementById('gps-txt').textContent = 'Eroare GPS — permite localizarea în browser';
+    err=>{
+      document.getElementById('gps-dot').style.background='#ff5050';
+      document.getElementById('gps-txt').textContent='Permite localizarea în browser!';
     },
-    { enableHighAccuracy: true, timeout: 15000 }
+    {enableHighAccuracy:true,timeout:15000}
   );
 }
 
-/* SCANNER */
-async function openScanner() {
+async function openScanner(){
   document.getElementById('scan-modal').classList.add('show');
-  try {
-    scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-    const video = document.getElementById('scan-video-admin');
-    video.srcObject = scanStream; video.play();
-    if ('BarcodeDetector' in window) {
-      const detector = new BarcodeDetector({ formats: ['qr_code'] });
-      scanInterval = setInterval(async () => {
-        try {
-          const codes = await detector.detect(video);
-          if (codes.length > 0) { closeScanner(); setCurrentId(codes[0].rawValue); }
-        } catch(e) {}
-      }, 500);
+  try{
+    scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    const video=document.getElementById('scan-video-admin');
+    video.srcObject=scanStream;video.play();
+    if('BarcodeDetector' in window){
+      const detector=new BarcodeDetector({formats:['qr_code']});
+      scanInterval=setInterval(async()=>{
+        try{const codes=await detector.detect(video);if(codes.length>0){closeScanner();setCurrentId(codes[0].rawValue);}}catch(e){}
+      },500);
     }
-  } catch(e) {
-    alert('Nu s-a putut accesa camera. Folosește câmpul manual.');
-  }
+  }catch(e){alert('Nu s-a putut accesa camera. Folosește câmpul manual.');}
 }
 
-function closeScanner() {
-  if (scanStream) scanStream.getTracks().forEach(t => t.stop());
-  if (scanInterval) clearInterval(scanInterval);
-  scanStream = null; scanInterval = null;
+function closeScanner(){
+  if(scanStream)scanStream.getTracks().forEach(t=>t.stop());
+  if(scanInterval)clearInterval(scanInterval);
+  scanStream=null;scanInterval=null;
   document.getElementById('scan-modal').classList.remove('show');
 }
 
-function useManualId() {
-  const id = document.getElementById('manual-id').value.trim();
-  if (id) { closeScanner(); setCurrentId(id); }
+function useManualId(){
+  const id=document.getElementById('manual-id').value.trim();
+  if(id){closeScanner();setCurrentId(id);}
 }
 
-/* PHOTO */
-function previewPhoto(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    photoBase64 = e.target.result;
-    const prev = document.getElementById('photo-preview');
-    prev.src = photoBase64; prev.style.display = 'block';
-  };
+function previewPhoto(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{photoBase64=e.target.result;const prev=document.getElementById('photo-preview');prev.src=photoBase64;prev.style.display='block';};
   reader.readAsDataURL(file);
 }
 
-/* SAVE */
-async function saveBlocker() {
-  if (!currentId) { showStatus('Scanează sau generează un cod QR mai întâi!', 'err'); return; }
-  if (!currentLat) { showStatus('Obține mai întâi poziția GPS!', 'err'); return; }
-  const name = document.getElementById('f-name').value.trim();
-  if (!name) { showStatus('Completează numele parcării!', 'err'); return; }
-
-  const btn = document.getElementById('save-btn');
-  btn.disabled = true; btn.textContent = 'SE SALVEAZĂ...';
-
-  const data = {
-    id: currentId,
-    lat: parseFloat(currentLat),
-    lng: parseFloat(currentLng),
-    name,
-    addr: document.getElementById('f-addr').value.trim(),
-    price: parseFloat(document.getElementById('f-price').value) || 5,
-    hours: document.getElementById('f-hours').value.trim() || '08:00–20:00',
-    phone: document.getElementById('f-phone').value.trim(),
-    whatsapp: document.getElementById('f-wa').value.trim(),
-    email: document.getElementById('f-email').value.trim(),
-    notes: document.getElementById('f-notes').value.trim(),
-    photo: photoBase64 || null,
-    free: true,
-    createdAt: Date.now()
+async function saveBlocker(){
+  if(!currentId){showStatus('Scanează sau generează un cod QR mai întâi!','err');return;}
+  if(!currentLat){showStatus('Obține mai întâi poziția GPS!','err');return;}
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){showStatus('Completează numele parcării!','err');return;}
+  const btn=document.getElementById('save-btn');
+  btn.disabled=true;btn.textContent='SE SALVEAZĂ...';
+  const data={
+    id:currentId,lat:parseFloat(currentLat),lng:parseFloat(currentLng),
+    name,addr:document.getElementById('f-addr').value.trim(),
+    price:parseFloat(document.getElementById('f-price').value)||5,
+    hours:document.getElementById('f-hours').value.trim()||'08:00–20:00',
+    phone:document.getElementById('f-phone').value.trim(),
+    whatsapp:document.getElementById('f-wa').value.trim(),
+    email:document.getElementById('f-email').value.trim(),
+    notes:document.getElementById('f-notes').value.trim(),
+    photo:photoBase64||null,free:true,createdAt:Date.now()
   };
-
-  try {
-    await fbSet(fbRef(db, 'blocatoare/' + currentId), data);
-    showStatus('✓ Blocatorul ' + currentId + ' salvat!', 'ok');
+  try{
+    await fbSet(fbRef(db,'blocatoare/'+currentId),data);
+    showStatus('✓ Blocatorul '+currentId+' salvat!','ok');
     resetForm();
-  } catch(e) {
-    showStatus('Eroare: ' + e.message, 'err');
-  }
-  btn.disabled = false; btn.textContent = '💾 SALVEAZĂ BLOCATORUL';
+  }catch(e){showStatus('Eroare: '+e.message,'err');}
+  btn.disabled=false;btn.textContent='💾 SALVEAZĂ BLOCATORUL';
 }
 
-function resetForm() {
-  currentId = null; currentLat = null; currentLng = null; photoBase64 = null;
-  ['f-name','f-addr','f-price','f-hours','f-phone','f-wa','f-email','f-notes'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('photo-preview').style.display = 'none';
-  document.getElementById('qr-card').style.display = 'none';
-  document.getElementById('gps-card').style.display = 'none';
-  document.getElementById('form-card').style.display = 'none';
+function resetForm(){
+  currentId=null;currentLat=null;currentLng=null;photoBase64=null;
+  ['f-name','f-addr','f-price','f-hours','f-phone','f-wa','f-email','f-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('photo-preview').style.display='none';
+  document.getElementById('qr-card').style.display='none';
+  document.getElementById('gps-card').style.display='none';
+  document.getElementById('form-card').style.display='none';
 }
 
-async function deleteBlocker(id) {
-  if (confirm('Ștergi blocatorul ' + id + '?')) {
-    await fbRemove(fbRef(db, 'blocatoare/' + id));
-  }
+async function deleteBlocker(id){
+  if(confirm('Ștergi blocatorul '+id+'?'))await fbRemove(fbRef(db,'blocatoare/'+id));
 }
 
-function showStatus(msg, type) {
-  const el = document.getElementById('status-msg');
-  el.textContent = msg; el.className = 'status ' + type; el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 4000);
+function showStatus(msg,type){
+  const el=document.getElementById('status-msg');
+  el.textContent=msg;el.className='status '+type;el.style.display='block';
+  setTimeout(()=>el.style.display='none',4000);
 }
 
-function printQR() {
-  const id = document.getElementById('qr-id-display').textContent;
-  const imgSrc = document.getElementById('qr-img').src;
-  const win = window.open('', '_blank');
+function printQR(){
+  const canvas=document.getElementById('qr-canvas');
+  const id=document.getElementById('qr-id-display').textContent;
+  const win=window.open('','_blank');
   win.document.write(`<html><body style="text-align:center;font-family:sans-serif;padding:30px">
-    <img src="${imgSrc}" style="width:250px;height:250px"><br><br>
+    <img src="${canvas.toDataURL()}" style="width:250px;height:250px"><br><br>
     <b style="font-size:22px">${id}</b><br><br>
     <span style="font-size:14px">TireaPark · Scanează pentru parcare</span>
     <script>window.onload=function(){window.print();}<\/script>
