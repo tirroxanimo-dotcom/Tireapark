@@ -34,6 +34,8 @@ input,button,select,textarea{font-size:16px!important}
 .photo-btn{width:100%;padding:14px;background:rgba(255,255,255,.05);border:1.5px dashed rgba(255,255,255,.2);border-radius:10px;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
 #photo-preview{width:100%;height:160px;object-fit:cover;border-radius:10px;display:none;margin-top:8px}
 .qr-wrap{text-align:center;padding:16px 0}
+#qr-svg-wrap{display:inline-block;background:#fff;padding:10px;border-radius:10px}
+#qr-svg-wrap svg{display:block}
 .qr-id{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#fff;margin-top:12px}
 .qr-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:4px}
 .print-btn{margin-top:14px;padding:12px 24px;background:#fff;border:none;border-radius:10px;color:#000;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
@@ -44,7 +46,7 @@ input,button,select,textarea{font-size:16px!important}
 .status.ok{background:rgba(0,230,77,.12);border:1px solid rgba(0,230,77,.25);color:#00e64d}
 .status.err{background:rgba(255,50,50,.12);border:1px solid rgba(255,50,50,.25);color:#ff5050}
 .blocker-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
-.blocker-num{width:40px;height:40px;background:rgba(0,230,77,.1);border:1px solid rgba(0,230,77,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;color:#00e64d;flex-shrink:0;text-align:center}
+.blocker-num{width:40px;height:40px;background:rgba(0,230,77,.1);border:1px solid rgba(0,230,77,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;color:#00e64d;flex-shrink:0}
 .blocker-info{flex:1;min-width:0}
 .blocker-name{font-size:13px;font-weight:600;color:#fff}
 .blocker-addr{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px}
@@ -87,7 +89,7 @@ input,button,select,textarea{font-size:16px!important}
   <div class="card" id="qr-card" style="display:none">
     <div class="card-title">🏷️ COD QR BLOCATOR</div>
     <div class="qr-wrap">
-      <canvas id="qr-canvas" width="220" height="220" style="background:#fff;border-radius:8px;padding:8px;display:block;margin:0 auto"></canvas>
+      <div id="qr-svg-wrap"></div>
       <div class="qr-id" id="qr-id-display">BL-000</div>
       <div class="qr-sub">Printează și lipește pe blocator</div>
       <button class="print-btn" onclick="printQR()">🖨️ PRINTEAZĂ QR</button>
@@ -148,67 +150,57 @@ input,button,select,textarea{font-size:16px!important}
 </div>
 
 <script>
-// QR CODE — JavaScript pur, fara librarii externe
+// QR Code generator care produce SVG direct — fara canvas, garantat pe Android
 var QRGen=(function(){
   var GFexp=[],GFlog=[];
-  function gfInit(){var x=1;for(var i=0;i<256;i++){GFexp[i]=x;GFlog[x]=i;x<<=1;if(x>=256)x^=0x11d;}GFexp[255]=GFexp[0];GFlog[0]=0;}
-  function gfMul(a,b){if(!a||!b)return 0;return GFexp[(GFlog[a]+GFlog[b])%255];}
-  function gfPoly(e){var p=[1];for(var i=0;i<e;i++){var np=new Array(p.length+1).fill(0);for(var j=0;j<=p.length;j++){if(j<p.length)np[j]^=p[j];if(j>0)np[j]^=gfMul(p[j-1],GFexp[i]);}p=np;}return p;}
-  function gfPolyDiv(msg,gen){var r=msg.slice();for(var i=0;i<=msg.length-gen.length;i++){var c=r[i];if(c)for(var j=1;j<gen.length;j++)if(gen[j])r[i+j]^=gfMul(gen[j],c);}return r.slice(msg.length-gen.length+1);}
-  gfInit();
-  var SIZE=25,AN='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
-  function matrix(){var m=[];for(var i=0;i<SIZE;i++){m[i]=new Array(SIZE).fill(-1);}return m;}
-  function finder(m,r,c){for(var i=-1;i<=7;i++)for(var j=-1;j<=7;j++){var ri=r+i,cj=c+j;if(ri<0||ri>=SIZE||cj<0||cj>=SIZE)continue;m[ri][cj]=((i>=0&&i<=6&&(j==0||j==6))||(j>=0&&j<=6&&(i==0||i==6))||(i>=2&&i<=4&&j>=2&&j<=4))?1:0;}}
-  function timing(m){for(var i=8;i<SIZE-8;i++)m[6][i]=m[i][6]=i%2?0:1;}
-  function align(m){[[18,18]].forEach(function(p){for(var i=-2;i<=2;i++)for(var j=-2;j<=2;j++)m[p[0]+i][p[1]+j]=(Math.abs(i)==2||Math.abs(j)==2||(!i&&!j))?1:0;});}
-  function reserveFmt(m){[[0,8],[1,8],[2,8],[3,8],[4,8],[5,8],[7,8],[8,8],[8,7],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0],[8,SIZE-1],[8,SIZE-2],[8,SIZE-3],[8,SIZE-4],[8,SIZE-5],[8,SIZE-6],[8,SIZE-7],[SIZE-8,8],[SIZE-7,8],[SIZE-6,8],[SIZE-5,8],[SIZE-4,8],[SIZE-3,8],[SIZE-2,8],[SIZE-1,8]].forEach(function(p){m[p[0]][p[1]]=0;});}
+  (function(){var x=1;for(var i=0;i<256;i++){GFexp[i]=x;GFlog[x]=i;x<<=1;if(x>=256)x^=0x11d;}GFexp[255]=GFexp[0];GFlog[0]=0;})();
+  function mul(a,b){return(!a||!b)?0:GFexp[(GFlog[a]+GFlog[b])%255];}
+  function poly(e){var p=[1];for(var i=0;i<e;i++){var n=new Array(p.length+1).fill(0);for(var j=0;j<=p.length;j++){if(j<p.length)n[j]^=p[j];if(j>0)n[j]^=mul(p[j-1],GFexp[i]);}p=n;}return p;}
+  function div(msg,gen){var r=msg.slice();for(var i=0;i<=msg.length-gen.length;i++){var c=r[i];if(c)for(var j=1;j<gen.length;j++)if(gen[j])r[i+j]^=mul(gen[j],c);}return r.slice(msg.length-gen.length+1);}
+  var S=25,AN='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+  function mkm(){var m=[];for(var i=0;i<S;i++)m[i]=new Array(S).fill(-1);return m;}
+  function finder(m,r,c){for(var i=-1;i<=7;i++)for(var j=-1;j<=7;j++){var ri=r+i,cj=c+j;if(ri<0||ri>=S||cj<0||cj>=S)continue;m[ri][cj]=((i>=0&&i<=6&&(j==0||j==6))||(j>=0&&j<=6&&(i==0||i==6))||(i>=2&&i<=4&&j>=2&&j<=4))?1:0;}}
+  function timing(m){for(var i=8;i<S-8;i++)m[6][i]=m[i][6]=i%2?0:1;}
+  function align(m){for(var i=-2;i<=2;i++)for(var j=-2;j<=2;j++)m[18+i][18+j]=(Math.abs(i)==2||Math.abs(j)==2||(!i&&!j))?1:0;}
+  function resFmt(m){[[0,8],[1,8],[2,8],[3,8],[4,8],[5,8],[7,8],[8,8],[8,7],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0],[8,S-1],[8,S-2],[8,S-3],[8,S-4],[8,S-5],[8,S-6],[8,S-7],[S-8,8],[S-7,8],[S-6,8],[S-5,8],[S-4,8],[S-3,8],[S-2,8],[S-1,8]].forEach(function(p){m[p[0]][p[1]]=0;});}
   function encAN(s){
-    var bits=[];
-    function add(v,n){for(var i=n-1;i>=0;i--)bits.push((v>>i)&1);}
+    var b=[];function add(v,n){for(var i=n-1;i>=0;i--)b.push((v>>i)&1);}
     add(2,4);add(s.length,9);
     for(var i=0;i<s.length-1;i+=2)add(AN.indexOf(s[i])*45+AN.indexOf(s[i+1]),11);
     if(s.length%2)add(AN.indexOf(s[s.length-1]),6);
-    add(0,4);
-    while(bits.length%8)bits.push(0);
-    var bytes=[];for(var i=0;i<bits.length;i+=8){var b=0;for(var j=0;j<8;j++)b=(b<<1)|(bits[i+j]||0);bytes.push(b);}
+    add(0,4);while(b.length%8)b.push(0);
+    var bytes=[];for(var i=0;i<b.length;i+=8){var v=0;for(var j=0;j<8;j++)v=(v<<1)|(b[i+j]||0);bytes.push(v);}
     var pad=[0xEC,0x11],pi=0;while(bytes.length<28)bytes.push(pad[pi++%2]);
     return bytes;
   }
-  function ecc(data){var gen=gfPoly(16),pad=data.concat(new Array(16).fill(0));return data.concat(gfPolyDiv(pad,gen).slice(0,16));}
   function place(m,cw){
     var bits=[];cw.forEach(function(b){for(var i=7;i>=0;i--)bits.push((b>>i)&1);});
     var idx=0,up=true;
-    for(var col=SIZE-1;col>=1;col-=2){
-      if(col==6)col=5;
-      for(var ri=0;ri<SIZE;ri++){
-        var row=up?SIZE-1-ri:ri;
+    for(var col=S-1;col>=1;col-=2){if(col==6)col=5;
+      for(var ri=0;ri<S;ri++){var row=up?S-1-ri:ri;
         for(var dc=0;dc<2;dc++){var c=col-dc;if(m[row][c]==-1)m[row][c]=idx<bits.length?bits[idx++]:0;}
-      }
-      up=!up;
+      }up=!up;
     }
   }
-  function mask(m){for(var r=0;r<SIZE;r++)for(var c=0;c<SIZE;c++)if(m[r][c]!=-1&&(r+c)%2==0)m[r][c]^=1;}
+  function applyMask(m){for(var r=0;r<S;r++)for(var c=0;c<S;c++)if(m[r][c]!=-1&&(r+c)%2==0)m[r][c]^=1;}
   function fmtInfo(m){
     var fmt=[0,1,0,0,1,1,0,1,1,1,0,1,1,1,0,0];
-    var p1=[[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
-    var p2=[[SIZE-1,8],[SIZE-2,8],[SIZE-3,8],[SIZE-4,8],[SIZE-5,8],[SIZE-6,8],[SIZE-7,8],[8,SIZE-8],[8,SIZE-7],[8,SIZE-6],[8,SIZE-5],[8,SIZE-4],[8,SIZE-3],[8,SIZE-2],[8,SIZE-1]];
-    for(var i=0;i<15;i++){m[p1[i][0]][p1[i][1]]=fmt[i];m[p2[i][0]][p2[i][1]]=fmt[i];}
-    m[SIZE-8][8]=1;
+    [[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]].forEach(function(p,i){m[p[0]][p[1]]=fmt[i];});
+    [[S-1,8],[S-2,8],[S-3,8],[S-4,8],[S-5,8],[S-6,8],[S-7,8],[8,S-8],[8,S-7],[8,S-6],[8,S-5],[8,S-4],[8,S-3],[8,S-2],[8,S-1]].forEach(function(p,i){m[p[0]][p[1]]=fmt[i];});
+    m[S-8][8]=1;
   }
   return{
-    draw:function(text,canvas){
+    svg:function(text){
       var s=text.toUpperCase().replace(/[^0-9A-Z $%*+\-.\/:]/g,'').substring(0,26);
-      var cw=ecc(encAN(s));
-      var m=matrix();
-      finder(m,0,0);finder(m,0,SIZE-7);finder(m,SIZE-7,0);
-      timing(m);align(m);reserveFmt(m);place(m,cw);mask(m);fmtInfo(m);
-      var W=220,mod=Math.floor(W/SIZE),off=Math.floor((W-mod*SIZE)/2);
-      canvas.width=W;canvas.height=W;
-      var ctx=canvas.getContext('2d');
-      ctx.fillStyle='#fff';ctx.fillRect(0,0,W,W);
-      ctx.fillStyle='#000';
-      for(var r=0;r<SIZE;r++)for(var c=0;c<SIZE;c++)
-        if(m[r][c]===1)ctx.fillRect(off+c*mod,off+r*mod,mod,mod);
+      var cw=encAN(s).concat((function(){var d=encAN(s).concat(new Array(16).fill(0));return div(d,poly(16)).slice(0,16);})());
+      // rebuild properly
+      var data=encAN(s);var gen=poly(16);var pad=data.concat(new Array(16).fill(0));var ec=div(pad,gen).slice(0,16);var codewords=data.concat(ec);
+      var m=mkm();finder(m,0,0);finder(m,0,S-7);finder(m,S-7,0);timing(m);align(m);resFmt(m);place(m,codewords);applyMask(m);fmtInfo(m);
+      var sz=220,mod=Math.floor(sz/S),off=Math.floor((sz-mod*S)/2);
+      var rects='';
+      for(var r=0;r<S;r++)for(var c=0;c<S;c++)
+        if(m[r][c]===1)rects+='<rect x="'+(off+c*mod)+'" y="'+(off+r*mod)+'" width="'+mod+'" height="'+mod+'"/>';
+      return '<svg xmlns="http://www.w3.org/2000/svg" width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'"><rect width="'+sz+'" height="'+sz+'" fill="white"/><g fill="black">'+rects+'</g></svg>';
     }
   };
 })();
@@ -243,7 +235,7 @@ function setCurrentId(id){
   document.getElementById('qr-card').style.display='block';
   document.getElementById('gps-card').style.display='block';
   document.getElementById('form-card').style.display='block';
-  QRGen.draw(id,document.getElementById('qr-canvas'));
+  document.getElementById('qr-svg-wrap').innerHTML=QRGen.svg(id);
   setTimeout(()=>document.getElementById('qr-card').scrollIntoView({behavior:'smooth'}),100);
 }
 
@@ -293,8 +285,7 @@ async function saveBlocker(){
       notes:document.getElementById('f-notes').value.trim(),
       photo:photoBase64||null,free:true,createdAt:Date.now()
     });
-    showStatus('✓ Blocatorul '+currentId+' salvat!','ok');
-    resetForm();
+    showStatus('✓ Blocatorul '+currentId+' salvat!','ok');resetForm();
   }catch(e){showStatus('Eroare: '+e.message,'err');}
   btn.disabled=false;btn.textContent='💾 SALVEAZĂ BLOCATORUL';
 }
@@ -312,9 +303,9 @@ function showStatus(msg,type){const el=document.getElementById('status-msg');el.
 
 function printQR(){
   const id=document.getElementById('qr-id-display').textContent;
-  const dataUrl=document.getElementById('qr-canvas').toDataURL('image/png');
+  const svgHtml=document.getElementById('qr-svg-wrap').innerHTML;
   const win=window.open('','_blank');
-  win.document.write(`<html><body style="text-align:center;font-family:sans-serif;padding:30px"><img src="${dataUrl}" style="width:250px;height:250px"><br><br><b style="font-size:22px">${id}</b><br><br><span style="font-size:14px">TireaPark · Scanează pentru parcare</span><script>window.onload=function(){window.print();}<\/script></body></html>`);
+  win.document.write(`<html><body style="text-align:center;font-family:sans-serif;padding:30px">${svgHtml}<br><br><b style="font-size:22px">${id}</b><br><br><span style="font-size:14px">TireaPark · Scanează pentru parcare</span><script>window.onload=function(){window.print();}<\/script></body></html>`);
   win.document.close();
 }
 </script>
