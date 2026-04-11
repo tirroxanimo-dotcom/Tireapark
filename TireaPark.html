@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>TireaPark · Cluj 3D</title>
+<link href="https://cdn.jsdelivr.net/npm/mapbox-gl@3.3.0/dist/mapbox-gl.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mapbox-gl@3.3.0/dist/mapbox-gl.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:#2d3748;font-family:'Inter',sans-serif;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+#map{position:fixed;inset:0;z-index:1}
+
+/* BOOT */
+#boot{position:fixed;inset:0;z-index:9999;background:#2d3748;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.boot-ring{width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.08);border-top:2px solid #fff;animation:spin 1s linear infinite;margin-bottom:18px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.boot-title{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:.08em;margin-bottom:3px}
+.boot-sub{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.15em;margin-bottom:20px}
+.boot-bar{width:160px;height:2px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-bottom:6px}
+.boot-fill{height:100%;width:0;background:#fff;border-radius:2px}
+.boot-pct{font-size:9px;color:rgba(255,255,255,.3)}
+.boot-log{font-size:9px;color:rgba(255,255,255,.15);margin-top:4px;height:12px}
+
+/* HEADER */
+#hdr{
+  position:fixed;top:0;left:0;right:0;z-index:20;
+  padding:max(12px, env(safe-area-inset-top)) 14px 10px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(180deg,rgba(0,0,0,.7) 0%,transparent 100%);
+  pointer-events:none;
+}
+.logo-wrap{display:flex;align-items:center;gap:8px}
+.logo-badge{width:32px;height:32px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-badge svg{width:17px;height:17px}
+.logo-text{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em}
+.logo-city{font-size:8px;color:rgba(255,255,255,.35);margin-top:1px;letter-spacing:.06em}
+.hdr-clock{font-family:'Space Grotesk',sans-serif;font-size:14px;color:#fff;font-weight:600;text-align:right}
+.hdr-date{font-size:8px;color:rgba(255,255,255,.3);text-align:right;margin-top:1px}
+
+/* TOPBAR */
+#topbar{
+  position:fixed;top:58px;left:14px;right:14px;
+  z-index:20;display:flex;align-items:center;gap:5px;
+  flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;pointer-events:auto;
+}
+#topbar::-webkit-scrollbar{display:none}
+.stat{
+  background:rgba(35,44,58,.7);backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.12);border-radius:16px;
+  padding:5px 9px;display:flex;align-items:center;gap:4px;
+  white-space:nowrap;flex-shrink:0;
+}
+.stat-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.stat-txt{font-size:10px;color:rgba(255,255,255,.6);font-weight:500}
+.stat-txt b{color:#fff;font-weight:700}
+#search-wrap{
+  background:rgba(35,44,58,.7);backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.12);border-radius:16px;
+  padding:5px 10px;display:flex;align-items:center;gap:6px;
+  width:120px;flex-shrink:0;
+}
+#search-input{
+  background:transparent;border:none;outline:none;
+  color:#fff;font-size:11px;font-family:'Inter',sans-serif;
+  width:100%;min-width:0;
+}
+#search-input::placeholder{color:rgba(255,255,255,.3)}
+#search-ico{opacity:.35;flex-shrink:0}
+
+/* SEARCH RESULTS */
+#search-results{
+  position:fixed;top:96px;left:14px;right:14px;z-index:21;
+  background:rgba(40,50,65,.95);backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.12);border-radius:12px;
+  overflow:hidden;display:none;
+}
+.sr-item{
+  padding:12px 14px;font-size:13px;color:rgba(255,255,255,.7);
+  cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06);
+  min-height:44px;display:flex;align-items:center;
+}
+.sr-item:last-child{border-bottom:none}
+.sr-item:active{background:rgba(255,255,255,.1)}
+
+/* VIEW CONTROLS */
+#views{
+  position:fixed;bottom:calc(72px + env(safe-area-inset-bottom));
+  left:50%;transform:translateX(-50%);
+  z-index:20;display:flex;gap:4px;
+  background:rgba(35,44,58,.75);backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.12);border-radius:12px;
+  padding:5px;white-space:nowrap;
+}
+.vbtn{
+  padding:8px 12px;border-radius:8px;cursor:pointer;
+  font-size:11px;font-weight:600;color:rgba(255,255,255,.5);
+  letter-spacing:.03em;transition:all .2s;
+  display:flex;align-items:center;gap:4px;min-height:36px;
+}
+.vbtn:active{opacity:.7}
+.vbtn.active{background:#fff;color:#000}
+.vbtn-ico{font-size:12px}
+#v-street{color:rgba(66,133,244,.8)}
+#v-street.active{background:#4285f4;color:#fff}
+
+/* MARKERS */
+.mk{width:36px;height:36px;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center}
+.mk-inner{width:16px;height:18px;position:relative;}
+.mk-blocker{width:16px;height:18px;position:relative;transition:transform .18s;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6));}
+.mk-arc{position:absolute;top:0;left:0;width:16px;height:10px;border-radius:8px 8px 0 0;border:2px solid currentColor;border-bottom:none;box-sizing:border-box;}
+.mk-base{position:absolute;bottom:0;left:1px;right:1px;height:8px;border-radius:2px 2px 1px 1px;background:#111;}
+.mk-solar{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:7px;height:2px;border-radius:1px;background:rgba(120,190,255,.5);}
+.mk-pulse{position:absolute;inset:0;border-radius:50%;animation:pulse 2.5s ease-out infinite;pointer-events:none;}
+@keyframes pulse{0%{transform:scale(.5);opacity:.35}100%{transform:scale(2.2);opacity:0}}
+.mk:active .mk-blocker{transform:scale(1.15)}
+
+/* PANEL */
+#pover{display:none;position:fixed;inset:0;z-index:28;background:rgba(35,44,58,.4);backdrop-filter:blur(3px)}
+#panel{
+  position:fixed;bottom:-100%;left:0;right:0;z-index:30;
+  background:rgba(40,50,65,.98);
+  border-top:1px solid rgba(255,255,255,.1);
+  border-radius:20px 20px 0 0;
+  padding:0 18px calc(24px + env(safe-area-inset-bottom));
+  transition:bottom .4s cubic-bezier(.16,1,.3,1);
+  backdrop-filter:blur(20px);
+}
+#panel.open{bottom:0}
+.p-handle{width:32px;height:3px;background:rgba(255,255,255,.15);border-radius:3px;margin:10px auto 16px}
+.p-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.p-id{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.12em;margin-bottom:3px}
+.p-name{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#fff}
+.p-addr{font-size:11px;color:rgba(255,255,255,.4);margin-top:3px}
+.p-close{width:32px;height:32px;background:rgba(255,255,255,.08);border:none;border-radius:8px;color:rgba(255,255,255,.5);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.p-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.p-chip{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 6px;text-align:center;}
+.p-chip-v{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:#fff}
+.p-chip-l{font-size:8px;color:rgba(255,255,255,.3);margin-top:3px;letter-spacing:.08em}
+.p-btn{width:100%;padding:16px;border:none;border-radius:12px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:all .2s;}
+.p-btn.free{background:#fff;color:#000}
+.p-btn.free:active{background:#e0e0e0}
+.p-btn.occ{background:rgba(255,60,80,.12);color:rgba(255,80,100,.8);border:1px solid rgba(255,60,80,.2)}
+
+/* NAV */
+#bnav{
+  position:fixed;bottom:0;left:0;right:0;z-index:25;
+  background:rgba(40,50,65,.95);
+  border-top:1px solid rgba(255,255,255,.07);
+  display:flex;
+  padding:8px 0 calc(8px + env(safe-area-inset-bottom));
+  backdrop-filter:blur(20px);
+}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;min-height:44px;justify-content:center;}
+.ni-ic{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:7px;transition:all .15s}
+.ni.act .ni-ic{background:rgba(255,255,255,.1)}
+.ni-lb{font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.05em;font-weight:600}
+.ni.act .ni-lb{color:rgba(255,255,255,.8)}
+
+/* TOAST */
+#toast{
+  position:fixed;
+  bottom:calc(80px + env(safe-area-inset-bottom));
+  left:14px;right:14px;
+  z-index:999;opacity:0;pointer-events:none;
+  transform:translateY(10px);
+  transition:all .35s cubic-bezier(.34,1.56,.64,1);
+}
+#toast.show{opacity:1;transform:translateY(0)}
+.t-box{background:rgba(40,50,65,.95);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,.5);}
+.t-ic{width:28px;height:28px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.t-title{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#fff}
+.t-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:1px}
+
+/* MAPBOX ZOOM BUTTONS — vizibile pe hartă întunecată */
+.mapboxgl-ctrl-group{
+  background:rgba(255,255,255,0.95) !important;
+  border:1.5px solid rgba(255,255,255,0.3) !important;
+  border-radius:10px !important;
+  box-shadow:0 4px 16px rgba(0,0,0,0.5) !important;
+  overflow:hidden !important;
+  backdrop-filter:none !important;
+}
+.mapboxgl-ctrl-group button{
+  background:transparent !important;
+  width:40px !important;
+  height:40px !important;
+  color:#1a1a2e !important;
+  font-size:20px !important;
+}
+.mapboxgl-ctrl-group button:hover{
+  background:rgba(0,0,0,0.06) !important;
+}
+.mapboxgl-ctrl-group button + button{
+  border-top:1px solid rgba(0,0,0,0.08) !important;
+}
+.mapboxgl-ctrl-group button .mapboxgl-ctrl-icon{
+  filter:invert(0) !important;
+}
+.mapboxgl-ctrl-bottom-right{bottom:calc(150px + env(safe-area-inset-bottom))!important;right:14px!important}
+.mapboxgl-ctrl-attrib,.mapboxgl-ctrl-logo{display:none!important}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* MOBILE */
+input,button,select,textarea{font-size:16px!important}
+*{touch-action:manipulation}
+#map canvas{touch-action:none}
+</style>
+</head>
+<body>
+
+<div id="boot">
+  <div class="boot-ring"></div>
+  <div class="boot-title">TIREAPARK</div>
+  <div class="boot-sub">CLUJ-NAPOCA · 3D REAL</div>
+  <div class="boot-bar"><div class="boot-fill" id="b-fill"></div></div>
+  <div class="boot-pct" id="b-pct">0%</div>
+  <div class="boot-log" id="b-log">SE INIȚIALIZEAZĂ...</div>
+</div>
+
+<div id="map"></div>
+
+<div id="hdr">
+  <div class="logo-wrap">
+    <div class="logo-badge">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#000"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">TireaPark</div>
+      <div class="logo-city">CLUJ-NAPOCA</div>
+    </div>
+  </div>
+  <div>
+    <div class="hdr-clock" id="clk">--:--:--</div>
+    <div class="hdr-date" id="dt">-- --- ----</div>
+  </div>
+</div>
+
+<div id="topbar">
+  <div class="stat">
+    <div class="stat-dot" style="background:#00e64d"></div>
+    <div class="stat-txt"><b id="cnt-free">7</b> LIBERE</div>
+  </div>
+  <div class="stat">
+    <div class="stat-dot" style="background:#ff0022"></div>
+    <div class="stat-txt"><b id="cnt-occ">3</b> OCUPATE</div>
+  </div>
+  <div class="stat">
+    <div class="stat-dot" style="background:#facc15;animation:blink 1.4s infinite"></div>
+    <div class="stat-txt">LIVE</div>
+  </div>
+  <div id="search-wrap">
+    <svg id="search-ico" width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#fff" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+    <input id="search-input" type="text" placeholder="Caută o stradă..." autocomplete="off" autocorrect="off" spellcheck="false">
+  </div>
+</div>
+
+<!-- AGENT PANEL -->
+<div id="agent-panel" style="display:none;position:fixed;inset:0;z-index:40;background:#2d3748;flex-direction:column;overflow-y:auto">
+  <div style="padding:max(14px,env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07);position:sticky;top:0;background:#2d3748;z-index:2">
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff">CONTUL MEU</div>
+    <button onclick="closeAgent()" style="width:32px;height:32px;background:rgba(255,255,255,.08);border:none;border-radius:8px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+  </div>
+  <div style="padding:16px;display:flex;flex-direction:column;gap:12px;padding-bottom:calc(24px + env(safe-area-inset-bottom))">
+
+    <div style="background:linear-gradient(135deg,rgba(0,200,255,.12),rgba(0,100,200,.08));border:1px solid rgba(0,200,255,.2);border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px">
+      <div id="agent-avatar" style="width:54px;height:54px;background:rgba(0,200,255,.2);border:2px solid rgba(0,200,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:#00c8ff;flex-shrink:0">?</div>
+      <div style="flex:1;min-width:0">
+        <div id="agent-name-display" style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff">Numele tău</div>
+        <div id="agent-email-display" style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px">email@exemplu.com</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:6px">
+          <span style="font-size:14px">⭐</span>
+          <span id="agent-points" style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#facc15">0</span>
+          <span style="font-size:10px;color:rgba(255,255,255,.3)">PUNCTE</span>
+        </div>
+      </div>
+      <button onclick="toggleEdit()" style="padding:6px 12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.5);font-size:11px;font-weight:600;cursor:pointer">EDITEAZĂ</button>
+    </div>
+
+    <div id="agent-edit" style="display:none;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px;flex-direction:column;gap:10px">
+      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em">EDITEAZĂ PROFIL</div>
+      <input id="inp-name" type="text" placeholder="Numele tău" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;color:#fff;font-size:13px;outline:none;width:100%">
+      <input id="inp-email" type="email" placeholder="Email" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;color:#fff;font-size:13px;outline:none;width:100%">
+      <input id="inp-phone" type="tel" placeholder="Telefon" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;color:#fff;font-size:13px;outline:none;width:100%">
+      <button onclick="saveProfile()" style="padding:13px;background:#fff;border:none;border-radius:10px;color:#000;font-size:13px;font-weight:700;cursor:pointer">SALVEAZĂ</button>
+    </div>
+
+    <div style="background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.15);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(255,215,0,.5);letter-spacing:.1em;margin-bottom:10px">⭐ PUNCTE DE LOIALITATE</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div>
+          <div id="points-display" style="font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:#facc15">0</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:1px">puncte disponibile</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:rgba(255,255,255,.4)">10 pct = 1 leu reducere</div>
+          <div id="points-value" style="font-size:13px;font-weight:600;color:#facc15;margin-top:3px">= 0 lei</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,215,0,.08);border-radius:8px;padding:10px 12px;font-size:11px;color:rgba(255,255,255,.4)">
+        💡 Câștigi <b style="color:#facc15">5 puncte</b> pentru fiecare rezervare. La <b style="color:#facc15">100 pct</b> primești o oră gratuită!
+      </div>
+    </div>
+
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:12px">💳 METODE DE PLATĂ</div>
+      <div style="display:flex;flex-direction:column;gap:8px" id="payment-list">
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="toggleAddCard()">
+          <div style="width:36px;height:24px;background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(255,255,255,.15);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,.4);flex-shrink:0">CARD</div>
+          <div id="card-display" style="font-size:13px;color:rgba(255,255,255,.5);flex:1">+ Adaugă card Visa/Mastercard</div>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="toggleRevolut()">
+          <div style="width:36px;height:24px;background:#191c49;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:9px;font-weight:700;color:#fff">REV</span></div>
+          <div id="revolut-display" style="font-size:13px;color:rgba(255,255,255,.5);flex:1">+ Conectează Revolut</div>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:24px;background:#000;border:1px solid rgba(255,255,255,.15);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">⬛</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.5);flex:1">Apple Pay / Google Pay</div>
+          <div style="font-size:10px;color:rgba(0,230,77,.6);background:rgba(0,230,77,.1);padding:3px 8px;border-radius:10px">ACTIV</div>
+        </div>
+      </div>
+      <div id="add-card-form" style="display:none;flex-direction:column;gap:8px;margin-top:10px">
+        <input type="text" placeholder="Număr card (1234 5678 9012 3456)" maxlength="19" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;color:#fff;font-size:13px;outline:none;width:100%" oninput="formatCard(this)">
+        <div style="display:flex;gap:8px">
+          <input type="text" placeholder="MM/AA" maxlength="5" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;color:#fff;font-size:13px;outline:none">
+          <input type="text" placeholder="CVV" maxlength="3" style="width:80px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;color:#fff;font-size:13px;outline:none">
+        </div>
+        <button onclick="saveCard()" style="padding:12px;background:#fff;border:none;border-radius:10px;color:#000;font-size:13px;font-weight:700;cursor:pointer">SALVEAZĂ CARDUL</button>
+      </div>
+    </div>
+
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:12px">🎫 ABONAMENT</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;text-align:center;cursor:pointer" onclick="selectPlan('lunar')">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#fff">49 lei</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px">/ LUNAR</div>
+          <div style="font-size:9px;color:#00e64d;margin-top:5px">NELIMITAT</div>
+        </div>
+        <div style="background:rgba(0,200,255,.08);border:1px solid rgba(0,200,255,.25);border-radius:10px;padding:12px;text-align:center;cursor:pointer" onclick="selectPlan('anual')">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#00c8ff">399 lei</div>
+          <div style="font-size:10px;color:rgba(0,200,255,.5);margin-top:2px">/ ANUAL</div>
+          <div style="font-size:9px;color:#facc15;margin-top:5px">-32% REDUCERE</div>
+        </div>
+      </div>
+      <div id="plan-msg" style="display:none;margin-top:10px;text-align:center;font-size:12px;color:#00e64d"></div>
+    </div>
+
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:10px">🚗 MAȘINA MEA</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div style="font-size:24px">🚗</div>
+        <div>
+          <div id="car-display" style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#fff">Adaugă mașina</div>
+          <div id="plate-display" style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px">Număr înmatriculare</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <input id="inp-car" type="text" placeholder="Ex: Dacia Logan" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 11px;color:#fff;font-size:12px;outline:none">
+        <input id="inp-plate" type="text" placeholder="CJ-123-ABC" style="width:110px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 11px;color:#fff;font-size:12px;outline:none;text-transform:uppercase">
+        <button onclick="saveCar()" style="padding:9px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer">OK</button>
+      </div>
+    </div>
+
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:12px">🔐 SECURITATE</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer" onclick="alert('Schimbare parolă — disponibil în curând')">
+          <div style="font-size:13px;color:rgba(255,255,255,.7)">Schimbă parola</div>
+          <div style="font-size:16px;color:rgba(255,255,255,.25)">›</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+          <div style="font-size:13px;color:rgba(255,255,255,.7)">Amprentă / Face ID</div>
+          <div onclick="toggleNotif(this)" data-on="1" style="width:40px;height:22px;background:#00e64d;border-radius:11px;position:relative;cursor:pointer;transition:background .2s"><div style="position:absolute;top:3px;right:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:all .2s"></div></div>
+        </div>
+        <div style="padding:10px 0;cursor:pointer" onclick="confirmLogout()">
+          <div style="font-size:13px;color:rgba(255,60,80,.7)">Delogare</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:12px">🔔 NOTIFICĂRI</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:13px;color:rgba(255,255,255,.7)">Loc s-a eliberat</div>
+          <div onclick="toggleNotif(this)" data-on="1" style="width:40px;height:22px;background:#00e64d;border-radius:11px;position:relative;cursor:pointer;transition:background .2s"><div style="position:absolute;top:3px;right:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:all .2s"></div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:13px;color:rgba(255,255,255,.7)">Rezervare expiră</div>
+          <div onclick="toggleNotif(this)" data-on="1" style="width:40px;height:22px;background:#00e64d;border-radius:11px;position:relative;cursor:pointer;transition:background .2s"><div style="position:absolute;top:3px;right:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:all .2s"></div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:13px;color:rgba(255,255,255,.7)">Oferte speciale</div>
+          <div onclick="toggleNotif(this)" data-on="0" style="width:40px;height:22px;background:rgba(255,255,255,.15);border-radius:11px;position:relative;cursor:pointer;transition:background .2s"><div style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:all .2s"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:12px">📞 SUPORT</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <a href="tel:+40700000000" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);text-decoration:none">
+          <div style="font-size:13px;color:rgba(255,255,255,.7)">📞 Sună-ne</div>
+          <div style="font-size:12px;color:rgba(0,200,255,.7)">+40 700 000 000</div>
+        </a>
+        <a href="mailto:support@tireapark.ro" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);text-decoration:none">
+          <div style="font-size:13px;color:rgba(255,255,255,.7)">✉️ Email suport</div>
+          <div style="font-size:12px;color:rgba(0,200,255,.7)">support@tireapark.ro</div>
+        </a>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer" onclick="alert('FAQ — disponibil în curând')">
+          <div style="font-size:13px;color:rgba(255,255,255,.7)">❓ Întrebări frecvente</div>
+          <div style="font-size:16px;color:rgba(255,255,255,.25)">›</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;cursor:pointer" onclick="reportProblem()">
+          <div style="font-size:13px;color:rgba(255,255,255,.7)">⚠️ Raportează o problemă</div>
+          <div style="font-size:16px;color:rgba(255,255,255,.25)">›</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:rgba(0,230,77,.06);border:1px solid rgba(0,230,77,.15);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(0,230,77,.5);letter-spacing:.1em;margin-bottom:8px">🎁 INVITĂ PRIETENI</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:10px">Invită un prieten și ambii primiți <b style="color:#00e64d">50 puncte</b> gratuit!</div>
+      <div style="display:flex;gap:8px">
+        <div style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#00e64d;letter-spacing:.08em" id="referral-code">TIREA-????</div>
+        <button onclick="copyReferral()" style="padding:10px 14px;background:rgba(0,230,77,.15);border:1px solid rgba(0,230,77,.25);border-radius:8px;color:#00e64d;font-size:12px;font-weight:600;cursor:pointer">COPIAZĂ</button>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:8px 0">
+      <div style="font-size:10px;color:rgba(255,255,255,.12);letter-spacing:.08em">TIREAPARK v1.0 · CLUJ-NAPOCA © 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOG PANEL -->
+<div id="log-panel" style="display:none;position:fixed;inset:0;z-index:40;background:#2d3748;flex-direction:column">
+  <div style="padding:max(14px,env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07)">
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff">ISTORIC PARCĂRI</div>
+    <button onclick="closeLog()" style="width:32px;height:32px;background:rgba(255,255,255,.08);border:none;border-radius:8px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06)">
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px 8px;text-align:center">
+      <div id="log-total-trips" style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#fff">0</div>
+      <div style="font-size:8px;color:rgba(255,255,255,.3);margin-top:2px;letter-spacing:.06em">PARCĂRI</div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px 8px;text-align:center">
+      <div id="log-total-hours" style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#fff">0</div>
+      <div style="font-size:8px;color:rgba(255,255,255,.3);margin-top:2px;letter-spacing:.06em">ORE TOTAL</div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px 8px;text-align:center">
+      <div id="log-total-cost" style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#facc15">0</div>
+      <div style="font-size:8px;color:rgba(255,255,255,.3);margin-top:2px;letter-spacing:.06em">LEI TOTAL</div>
+    </div>
+  </div>
+  <div id="log-list" style="flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px"></div>
+  <div style="padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.06)">
+    <button onclick="clearLog()" style="width:100%;padding:13px;background:rgba(255,50,70,.08);border:1px solid rgba(255,50,70,.18);border-radius:10px;color:rgba(255,70,90,.7);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.04em">ȘTERGE ISTORICUL</button>
+  </div>
+</div>
+
+<!-- SCAN PANEL -->
+<div id="scan-panel" style="display:none;position:fixed;inset:0;z-index:40;background:#000;flex-direction:column;align-items:center;justify-content:center">
+  <div style="position:absolute;top:0;left:0;right:0;padding:max(14px,env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(0,0,0,.8) 0%,transparent 100%);z-index:2">
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#fff">SCANEAZĂ COD</div>
+    <button onclick="closeScanner()" style="width:32px;height:32px;background:rgba(255,255,255,.1);border:none;border-radius:8px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+  </div>
+  <video id="scan-video" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
+  <div style="position:relative;z-index:2;width:220px;height:220px">
+    <div style="position:absolute;top:0;left:0;width:28px;height:28px;border-top:3px solid #00e64d;border-left:3px solid #00e64d;border-radius:3px 0 0 0"></div>
+    <div style="position:absolute;top:0;right:0;width:28px;height:28px;border-top:3px solid #00e64d;border-right:3px solid #00e64d;border-radius:0 3px 0 0"></div>
+    <div style="position:absolute;bottom:0;left:0;width:28px;height:28px;border-bottom:3px solid #00e64d;border-left:3px solid #00e64d;border-radius:0 0 0 3px"></div>
+    <div style="position:absolute;bottom:0;right:0;width:28px;height:28px;border-bottom:3px solid #00e64d;border-right:3px solid #00e64d;border-radius:0 0 3px 0"></div>
+    <div id="scan-line" style="position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,#00e64d,transparent);animation:scanline 2s ease-in-out infinite"></div>
+  </div>
+  <div id="scan-msg" style="position:relative;z-index:2;margin-top:20px;font-size:12px;color:rgba(255,255,255,.5);letter-spacing:.06em">ÎNDREAPTĂ CAMERA SPRE COD</div>
+  <canvas id="scan-canvas" style="display:none"></canvas>
+</div>
+
+<style>
+@keyframes scanline{0%{top:4px}50%{top:calc(100% - 6px)}100%{top:4px}}
+</style>
+
+<div id="views">
+  <div class="vbtn" id="v-street" onclick="openStreetView()"><span class="vbtn-ico">🚶</span> STRADĂ</div>
+  <div class="vbtn active" id="v-aerian" onclick="setView('aerian')"><span class="vbtn-ico">📐</span> AERIAN</div>
+  <div class="vbtn" id="v-sus" onclick="setView('sus')"><span class="vbtn-ico">🗺</span> SUS</div>
+</div>
+
+<div id="pover" onclick="closePanel()"></div>
+<div id="panel">
+  <div class="p-handle"></div>
+  <div class="p-top">
+    <div>
+      <div class="p-id" id="p-id">LOC DE PARCARE</div>
+      <div class="p-name" id="p-name">LOC #A1</div>
+      <div class="p-addr" id="p-addr">STR. MIHAI VITEAZU 7</div>
+    </div>
+    <button class="p-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="p-chips">
+    <div class="p-chip"><div class="p-chip-v" id="p-price">5</div><div class="p-chip-l">LEI/ORA</div></div>
+    <div class="p-chip"><div class="p-chip-v" id="p-hours" style="font-size:12px">08–18</div><div class="p-chip-l">PROGRAM</div></div>
+    <div class="p-chip"><div class="p-chip-v" id="p-stat" style="font-size:11px;color:#00e64d">LIBER</div><div class="p-chip-l">STATUS</div></div>
+  </div>
+  <button class="p-btn free" id="p-btn" onclick="doBook()">REZERVĂ ACUM</button>
+</div>
+
+<div id="bnav">
+  <div class="ni act" onclick="setNav(this)">
+    <div class="ni-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+    <span class="ni-lb">GRID</span>
+  </div>
+  <div class="ni" onclick="openScanner()">
+    <div class="ni-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke="rgba(255,255,255,.4)" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <span class="ni-lb">SCAN</span>
+  </div>
+  <div class="ni" onclick="openLog()">
+    <div class="ni-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><path d="M16 2v4M8 2v4M3 10h18" stroke="rgba(255,255,255,.4)" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <span class="ni-lb">LOG</span>
+  </div>
+  <div class="ni" onclick="openAgent()">
+    <div class="ni-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="rgba(255,255,255,.4)" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <span class="ni-lb">AGENT</span>
+  </div>
+</div>
+
+<div id="toast">
+  <div class="t-box">
+    <div class="t-ic">✓</div>
+    <div>
+      <div class="t-title">REZERVARE CONFIRMATĂ</div>
+      <div class="t-sub" id="t-sub">LOC A1 · 5 LEI/ORA</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* BOOT */
+const LOGS=['SE INIȚIALIZEAZĂ MOTORUL 3D...','SE ÎNCARCĂ CLUJ-NAPOCA...','SE CONSTRUIESC CLĂDIRILE...','SE APLICĂ TEXTURILE HD...','SE CALIBREAZĂ CAMERA...','SISTEM PORNIT'];
+let pct=0,mi=0;
+const bf=document.getElementById('b-fill'),bl=document.getElementById('b-log'),bp=document.getElementById('b-pct');
+const biv=setInterval(()=>{
+  pct=Math.min(100,pct+Math.random()*15+5);
+  bf.style.width=pct+'%';bp.textContent=Math.floor(pct)+'%';
+  if(mi<LOGS.length)bl.textContent=LOGS[mi++];
+  if(pct>=100){clearInterval(biv);bp.textContent='100%';setTimeout(()=>{const b=document.getElementById('boot');b.style.transition='opacity .8s';b.style.opacity='0';setTimeout(()=>b.style.display='none',800);},600);}
+},330);
+
+/* CLOCK */
+function tick(){
+  const n=new Date();
+  document.getElementById('clk').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');
+  const D=['DUM','LUN','MAR','MIE','JOI','VIN','SAM'],M=['IAN','FEB','MAR','APR','MAI','IUN','IUL','AUG','SEP','OCT','NOV','DEC'];
+  document.getElementById('dt').textContent=D[n.getDay()]+' '+n.getDate()+' '+M[n.getMonth()]+' '+n.getFullYear();
+}tick();setInterval(tick,1000);
+
+/* DATA */
+const SPOTS=[
+  {id:'A1',lat:46.7712,lng:23.5898,addr:'Str. Mihai Viteazu 7',price:5,hours:'08–18',free:true},
+  {id:'A2',lat:46.7695,lng:23.5921,addr:'Str. Eroilor 14',price:4,hours:'09–17',free:true},
+  {id:'B1',lat:46.7738,lng:23.5862,addr:'Bd. 21 Decembrie 8',price:6,hours:'07–19',free:true},
+  {id:'B2',lat:46.7748,lng:23.5942,addr:'Str. Dorobanților 3',price:5,hours:'10–16',free:false},
+  {id:'C1',lat:46.7680,lng:23.5875,addr:'Str. Clinicilor 22',price:3,hours:'08–12',free:true},
+  {id:'C2',lat:46.7722,lng:23.5958,addr:'Str. Napoca 9',price:5,hours:'11–20',free:true},
+  {id:'D1',lat:46.7762,lng:23.5878,addr:'Calea Dorobanților 45',price:4,hours:'08–18',free:false},
+  {id:'D2',lat:46.7698,lng:23.5912,addr:'Str. Memorandumului 2',price:6,hours:'07–22',free:true},
+  {id:'E1',lat:46.7655,lng:23.5932,addr:'Str. Observatorului 7',price:3,hours:'09–15',free:false},
+  {id:'E2',lat:46.7730,lng:23.5885,addr:'Piața Unirii',price:7,hours:'07–23',free:true},
+];
+
+/* MAP */
+mapboxgl.accessToken='pk.eyJ1IjoidGlyZWEiLCJhIjoiY21ucnYwZ2N3MDVkYzJvcGZ2dm00YWh5aCJ9.SvAkqaOFhVpx0cC_I8QRSg';
+const MAP_CENTER=[23.5905,46.7712];
+const map=new mapboxgl.Map({
+  container:'map',
+  style:'mapbox://styles/mapbox/standard',
+  center:MAP_CENTER,zoom:16,pitch:60,bearing:20,antialias:true,
+  maxBounds:[[23.48,46.70],[23.68,46.84]],minZoom:12,maxZoom:22,maxPitch:85,
+  touchZoomRotate:true,dragRotate:true,
+});
+map.addControl(new mapboxgl.NavigationControl({showCompass:false,showZoom:true}),'bottom-right');
+
+map.on('load',()=>{
+  try{
+    map.setConfigProperty('basemap','lightPreset','dusk');
+    map.setConfigProperty('basemap','showPointOfInterestLabels',true);
+    map.setConfigProperty('basemap','showRoadLabels',true);
+  }catch(e){}
+  addMarkers();
+  setTimeout(()=>{map.flyTo({center:MAP_CENTER,zoom:16.5,pitch:65,bearing:20,duration:4000,easing:t=>t<.5?4*t*t*t:(t-1)*(2*t-2)*(2*t-2)+1});},500);
+});
+
+/* MARKERS */
+function addMarkers(){
+  SPOTS.forEach(s=>{
+    const el=document.createElement('div');
+    el.className='mk';
+    const color=s.free?'#00e64d':'#ff0022';
+    const cr=s.free?'0,230,77':'255,0,34';
+    el.innerHTML=`<div class="mk-pulse" style="background:rgba(${cr},.2)"></div><div class="mk-inner"><div class="mk-blocker"><div class="mk-arc" style="color:${color}"></div><div class="mk-base"><div class="mk-solar"></div></div></div></div>`;
+    el.addEventListener('click',()=>openPanel(s));
+    new mapboxgl.Marker({element:el,anchor:'center'}).setLngLat([s.lng,s.lat]).addTo(map);
+  });
+}
+
+/* STREET VIEW */
+function openStreetView(){
+  const c=map.getCenter();
+  window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${c.lat},${c.lng}`,'_blank');
+}
+
+/* VIEW MODES */
+const VIEWS={
+  aerian:{zoom:17.5,pitch:80,bearing:20,duration:1600},
+  sus:   {zoom:14,  pitch:0, bearing:0, duration:1400},
+};
+
+function setView(mode){
+  document.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('v-'+mode).classList.add('active');
+  try{map.setConfigProperty('basemap','lightPreset','dusk');}catch(e){}
+  map.flyTo({center:map.getCenter(),...VIEWS[mode],easing:t=>1-Math.pow(1-t,3)});
+}
+
+/* SEARCH */
+const searchInput=document.getElementById('search-input');
+const searchResults=document.getElementById('search-results');
+searchInput.addEventListener('input',async function(){
+  const q=this.value.trim();
+  if(q.length<3){searchResults.style.display='none';return;}
+  try{
+    const res=await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q+' Cluj-Napoca')}.json?access_token=${mapboxgl.accessToken}&country=ro&proximity=23.5905,46.7712&limit=5`);
+    const data=await res.json();
+    if(!data.features?.length){searchResults.style.display='none';return;}
+    searchResults.innerHTML='';
+    data.features.forEach(f=>{
+      const item=document.createElement('div');
+      item.className='sr-item';
+      item.textContent=f.place_name.replace(', Romania','').replace(', Cluj-Napoca','');
+      item.addEventListener('click',()=>{
+        map.flyTo({center:f.center,zoom:17,pitch:60,duration:1200});
+        searchResults.style.display='none';
+        searchInput.value=item.textContent;
+        searchInput.blur();
+      });
+      searchResults.appendChild(item);
+    });
+    searchResults.style.display='block';
+  }catch(e){searchResults.style.display='none';}
+});
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#search-wrap')&&!e.target.closest('#search-results'))searchResults.style.display='none';
+});
+
+/* PANEL */
+let cur=null;
+function openPanel(s){
+  cur=s;
+  document.getElementById('p-id').textContent='LOC #'+s.id;
+  document.getElementById('p-name').textContent='LOC #'+s.id;
+  document.getElementById('p-addr').textContent=s.addr;
+  document.getElementById('p-price').textContent=s.price;
+  document.getElementById('p-hours').textContent=s.hours;
+  const ps=document.getElementById('p-stat');
+  ps.textContent=s.free?'LIBER':'OCUPAT';
+  ps.style.color=s.free?'#00e64d':'#ff0022';
+  const btn=document.getElementById('p-btn');
+  btn.textContent=s.free?'REZERVĂ ACUM':'NOTIFICĂ-MĂ';
+  btn.className='p-btn '+(s.free?'free':'occ');
+  document.getElementById('pover').style.display='block';
+  document.getElementById('panel').classList.add('open');
+  map.flyTo({center:[s.lng,s.lat+.0003],zoom:18,pitch:72,duration:1000,easing:t=>1-Math.pow(1-t,3)});
+}
+function closePanel(){document.getElementById('panel').classList.remove('open');document.getElementById('pover').style.display='none';cur=null;}
+function doBook(){
+  if(!cur||!cur.free)return;
+  saveToLog(cur);
+  addPoints(5);
+  document.getElementById('t-sub').textContent='LOC '+cur.id+' · '+cur.price+' LEI/ORA · +5 PTS ⭐';
+  const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);
+  closePanel();
+}
+
+/* AGENT */
+function getProfile(){try{return JSON.parse(localStorage.getItem('tireapark_profile')||'{}');}catch(e){return{};}}
+
+function openAgent(){
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  document.querySelectorAll('.ni')[3].classList.add('act');
+  const p=getProfile();
+  if(p.name){document.getElementById('agent-name-display').textContent=p.name;document.getElementById('agent-avatar').textContent=p.name[0].toUpperCase();}
+  if(p.email)document.getElementById('agent-email-display').textContent=p.email;
+  if(p.car)document.getElementById('car-display').textContent=p.car;
+  if(p.plate)document.getElementById('plate-display').textContent=p.plate;
+  if(p.name)document.getElementById('inp-name').value=p.name;
+  if(p.email)document.getElementById('inp-email').value=p.email;
+  if(p.phone)document.getElementById('inp-phone').value=p.phone;
+  if(p.car)document.getElementById('inp-car').value=p.car;
+  if(p.plate)document.getElementById('inp-plate').value=p.plate;
+  const pts=parseInt(localStorage.getItem('tireapark_points')||'0');
+  document.getElementById('agent-points').textContent=pts;
+  document.getElementById('points-display').textContent=pts;
+  document.getElementById('points-value').textContent='= '+Math.floor(pts/10)+' lei';
+  const code=localStorage.getItem('tireapark_ref')||(()=>{const c='TIREA-'+Math.random().toString(36).substr(2,5).toUpperCase();localStorage.setItem('tireapark_ref',c);return c;})();
+  document.getElementById('referral-code').textContent=code;
+  if(p.card)document.getElementById('card-display').textContent='•••• •••• •••• '+p.card.slice(-4);
+  if(p.revolut)document.getElementById('revolut-display').textContent='✓ Revolut conectat';
+  document.getElementById('agent-panel').style.display='flex';
+}
+
+function closeAgent(){
+  document.getElementById('agent-panel').style.display='none';
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  document.querySelectorAll('.ni')[0].classList.add('act');
+}
+function toggleEdit(){const ed=document.getElementById('agent-edit');ed.style.display=ed.style.display==='flex'?'none':'flex';}
+function saveProfile(){
+  const p=getProfile();
+  p.name=document.getElementById('inp-name').value.trim();
+  p.email=document.getElementById('inp-email').value.trim();
+  p.phone=document.getElementById('inp-phone').value.trim();
+  localStorage.setItem('tireapark_profile',JSON.stringify(p));
+  if(p.name){document.getElementById('agent-name-display').textContent=p.name;document.getElementById('agent-avatar').textContent=p.name[0].toUpperCase();}
+  if(p.email)document.getElementById('agent-email-display').textContent=p.email;
+  document.getElementById('agent-edit').style.display='none';
+}
+function saveCar(){
+  const p=getProfile();
+  p.car=document.getElementById('inp-car').value.trim();
+  p.plate=document.getElementById('inp-plate').value.trim().toUpperCase();
+  localStorage.setItem('tireapark_profile',JSON.stringify(p));
+  if(p.car)document.getElementById('car-display').textContent=p.car;
+  if(p.plate)document.getElementById('plate-display').textContent=p.plate;
+}
+function toggleAddCard(){const f=document.getElementById('add-card-form');f.style.display=f.style.display==='flex'?'none':'flex';}
+function toggleRevolut(){
+  const p=getProfile();p.revolut=!p.revolut;
+  localStorage.setItem('tireapark_profile',JSON.stringify(p));
+  document.getElementById('revolut-display').textContent=p.revolut?'✓ Revolut conectat':'+ Conectează Revolut';
+}
+function formatCard(el){el.value=el.value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim();}
+function saveCard(){
+  const inputs=document.querySelectorAll('#add-card-form input');
+  const num=inputs[0].value.replace(/\s/g,'');
+  if(num.length<16){alert('Număr card invalid');return;}
+  const p=getProfile();p.card=num;
+  localStorage.setItem('tireapark_profile',JSON.stringify(p));
+  document.getElementById('card-display').textContent='•••• •••• •••• '+num.slice(-4);
+  document.getElementById('add-card-form').style.display='none';
+}
+function selectPlan(type){
+  const msg=document.getElementById('plan-msg');
+  msg.style.display='block';
+  msg.textContent=type==='lunar'?'✓ Abonament lunar activat — 49 lei/lună':'✓ Abonament anual activat — 399 lei/an';
+  localStorage.setItem('tireapark_plan',type);
+}
+function toggleNotif(el){
+  const on=el.dataset.on==='1';
+  el.dataset.on=on?'0':'1';
+  el.style.background=on?'rgba(255,255,255,.15)':'#00e64d';
+  const dot=el.querySelector('div');
+  dot.style.left=on?'3px':'';dot.style.right=on?'':'3px';
+}
+function confirmLogout(){if(confirm('Ești sigur că vrei să te deloghezi?')){localStorage.clear();closeAgent();alert('Delogat cu succes!');}}
+function copyReferral(){
+  const code=document.getElementById('referral-code').textContent;
+  navigator.clipboard?.writeText(code).then(()=>alert('Cod copiat: '+code)).catch(()=>alert('Cod: '+code));
+}
+function reportProblem(){
+  const msg=prompt('Descrie problema:');
+  if(msg)alert('Problemă raportată! Te contactăm în maxim 24h. Mulțumim!');
+}
+function addPoints(n){
+  const pts=parseInt(localStorage.getItem('tireapark_points')||'0')+n;
+  localStorage.setItem('tireapark_points',pts);
+}
+
+/* LOG */
+function getLog(){try{return JSON.parse(localStorage.getItem('tireapark_log')||'[]');}catch(e){return[];}}
+function saveToLog(spot){
+  const log=getLog();
+  const hours=Math.floor(Math.random()*3)+1;
+  log.unshift({
+    id:spot.id,addr:spot.addr,price:spot.price,hours:hours,cost:spot.price*hours,
+    date:new Date().toLocaleDateString('ro-RO'),
+    time:new Date().toLocaleTimeString('ro-RO',{hour:'2-digit',minute:'2-digit'}),
+    ts:Date.now()
+  });
+  localStorage.setItem('tireapark_log',JSON.stringify(log.slice(0,50)));
+}
+function openLog(){
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  document.querySelectorAll('.ni')[2].classList.add('act');
+  document.getElementById('log-panel').style.display='flex';
+  renderLog();
+}
+function renderLog(){
+  const log=getLog();
+  const list=document.getElementById('log-list');
+  document.getElementById('log-total-trips').textContent=log.length;
+  document.getElementById('log-total-hours').textContent=log.reduce((a,e)=>a+e.hours,0);
+  document.getElementById('log-total-cost').textContent=log.reduce((a,e)=>a+e.cost,0);
+  if(log.length===0){
+    list.innerHTML=`<div style="text-align:center;padding:40px 0;color:rgba(255,255,255,.2);font-size:13px">Nu ai nicio parcare înregistrată</div>`;
+    return;
+  }
+  list.innerHTML=log.map(e=>`
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;background:rgba(0,230,77,.1);border:1px solid rgba(0,230,77,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;color:#00e64d;flex-shrink:0">${e.id}</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#fff">${e.addr}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:2px">${e.date} · ${e.time} · ${e.hours}h</div>
+        </div>
+      </div>
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#facc15;flex-shrink:0">${e.cost} lei</div>
+    </div>
+  `).join('');
+}
+function closeLog(){
+  document.getElementById('log-panel').style.display='none';
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  document.querySelectorAll('.ni')[0].classList.add('act');
+}
+function clearLog(){
+  if(confirm('Ștergi tot istoricul?')){localStorage.removeItem('tireapark_log');renderLog();}
+}
+
+/* SCANNER */
+let scanStream=null,scanInterval=null;
+async function openScanner(){
+  const panel=document.getElementById('scan-panel');
+  panel.style.display='flex';
+  document.getElementById('scan-msg').textContent='ÎNDREAPTĂ CAMERA SPRE COD';
+  document.getElementById('scan-msg').style.color='rgba(255,255,255,.5)';
+  try{
+    scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}});
+    const video=document.getElementById('scan-video');
+    video.srcObject=scanStream;
+    video.play();
+    if('BarcodeDetector' in window){
+      const detector=new BarcodeDetector({formats:['qr_code','code_128','ean_13','ean_8','upc_a']});
+      scanInterval=setInterval(async()=>{
+        try{const codes=await detector.detect(video);if(codes.length>0)handleScan(codes[0].rawValue);}catch(e){}
+      },500);
+    } else {
+      document.getElementById('scan-msg').textContent='CAMERA ACTIVĂ — BarcodeDetector INDISPONIBIL PE ACEST BROWSER';
+    }
+  }catch(e){
+    document.getElementById('scan-msg').textContent='NU S-A PUTUT ACCESA CAMERA';
+    document.getElementById('scan-msg').style.color='#ff0022';
+  }
+}
+function handleScan(value){
+  clearInterval(scanInterval);
+  document.getElementById('scan-msg').textContent='✓ COD DETECTAT: '+value;
+  document.getElementById('scan-msg').style.color='#00e64d';
+  const spot=SPOTS.find(s=>s.id===value||'LOC-'+s.id===value);
+  setTimeout(()=>{closeScanner();if(spot){openPanel(spot);}else{alert('Cod necunoscut: '+value);}},1200);
+}
+function closeScanner(){
+  if(scanStream)scanStream.getTracks().forEach(t=>t.stop());
+  if(scanInterval)clearInterval(scanInterval);
+  scanStream=null;scanInterval=null;
+  document.getElementById('scan-panel').style.display='none';
+}
+
+function setNav(el){document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));el.classList.add('act');}
+</script>
+</body>
+</html>
