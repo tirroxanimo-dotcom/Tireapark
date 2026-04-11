@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>TireaPark Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;min-height:100%;background:#1a1f2e;font-family:'Inter',sans-serif;color:#fff;padding-top:env(safe-area-inset-top)}
+input,button,select,textarea{font-size:16px!important}
+#app{max-width:480px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;gap:10px;padding:16px 0 20px}
+.hdr-logo{width:36px;height:36px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.hdr-logo svg{width:20px;height:20px}
+.hdr-title{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700}
+.hdr-sub{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px}
+.badge-admin{background:rgba(255,100,50,.15);border:1px solid rgba(255,100,50,.3);color:#ff6432;font-size:9px;font-weight:700;padding:3px 8px;border-radius:10px;letter-spacing:.08em;margin-left:auto}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px;margin-bottom:12px}
+.card-title{font-size:10px;color:rgba(255,255,255,.4);letter-spacing:.1em;margin-bottom:12px;font-weight:600}
+.scan-btn{width:100%;padding:18px;background:linear-gradient(135deg,#00e64d,#00b33a);border:none;border-radius:14px;color:#000;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.04em;margin-bottom:12px}
+.scan-btn:active{opacity:.8}
+.gps-row{display:flex;align-items:center;gap:10px;background:rgba(0,200,100,.08);border:1px solid rgba(0,200,100,.2);border-radius:10px;padding:12px}
+.gps-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.gps-txt{font-size:11px;color:rgba(255,255,255,.6);flex:1}
+.gps-coords{font-family:'Space Grotesk',sans-serif;font-size:10px;color:#00e64d;font-weight:600}
+.form-group{margin-bottom:10px}
+.form-label{font-size:10px;color:rgba(255,255,255,.4);letter-spacing:.08em;margin-bottom:5px;display:block}
+.form-input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 14px;color:#fff;font-size:14px;outline:none}
+.form-input:focus{border-color:rgba(0,230,77,.4)}
+.form-input::placeholder{color:rgba(255,255,255,.25)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.photo-btn{width:100%;padding:14px;background:rgba(255,255,255,.05);border:1.5px dashed rgba(255,255,255,.2);border-radius:10px;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+#photo-preview{width:100%;height:160px;object-fit:cover;border-radius:10px;display:none;margin-top:8px}
+.qr-wrap{text-align:center;padding:16px 0}
+.qr-wrap canvas{border-radius:8px;background:#fff;padding:8px}
+.qr-id{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#fff;margin-top:10px}
+.qr-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:4px}
+.print-btn{margin-top:14px;padding:12px 24px;background:#fff;border:none;border-radius:10px;color:#000;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.save-btn{width:100%;padding:18px;background:#fff;border:none;border-radius:14px;color:#000;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.04em;margin-top:4px}
+.save-btn:active{background:#e0e0e0}
+.save-btn:disabled{background:rgba(255,255,255,.2);color:rgba(255,255,255,.4)}
+.status{padding:12px 14px;border-radius:10px;font-size:13px;margin-bottom:12px;display:none}
+.status.ok{background:rgba(0,230,77,.12);border:1px solid rgba(0,230,77,.25);color:#00e64d}
+.status.err{background:rgba(255,50,50,.12);border:1px solid rgba(255,50,50,.25);color:#ff5050}
+.blocker-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.blocker-num{width:40px;height:40px;background:rgba(0,230,77,.1);border:1px solid rgba(0,230,77,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;color:#00e64d;flex-shrink:0;text-align:center;word-break:break-all}
+.blocker-info{flex:1;min-width:0}
+.blocker-name{font-size:13px;font-weight:600;color:#fff}
+.blocker-addr{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px}
+.blocker-del{width:30px;height:30px;background:rgba(255,50,50,.1);border:1px solid rgba(255,50,50,.2);border-radius:8px;color:rgba(255,80,80,.7);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#scan-modal{display:none;position:fixed;inset:0;z-index:100;background:#000;flex-direction:column;align-items:center;justify-content:center}
+#scan-modal.show{display:flex}
+#scan-video-admin{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.scan-frame{position:relative;z-index:2;width:220px;height:220px}
+.sc{position:absolute;width:28px;height:28px}
+.sc.tl{top:0;left:0;border-top:3px solid #00e64d;border-left:3px solid #00e64d;border-radius:3px 0 0 0}
+.sc.tr{top:0;right:0;border-top:3px solid #00e64d;border-right:3px solid #00e64d;border-radius:0 3px 0 0}
+.sc.bl{bottom:0;left:0;border-bottom:3px solid #00e64d;border-left:3px solid #00e64d;border-radius:0 0 0 3px}
+.sc.br{bottom:0;right:0;border-bottom:3px solid #00e64d;border-right:3px solid #00e64d;border-radius:0 0 3px 0}
+.sl{position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,#00e64d,transparent);animation:sl 2s ease-in-out infinite}
+@keyframes sl{0%{top:4px}50%{top:calc(100% - 6px)}100%{top:4px}}
+.scan-close{position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;z-index:3;width:36px;height:36px;background:rgba(255,255,255,.15);border:none;border-radius:8px;color:#fff;font-size:18px;cursor:pointer}
+.scan-hint{position:relative;z-index:2;margin-top:20px;font-size:12px;color:rgba(255,255,255,.6);text-align:center;padding:0 20px}
+.scan-manual{position:relative;z-index:2;margin-top:12px;display:flex;gap:8px;padding:0 20px}
+.scan-manual input{flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:10px 12px;color:#fff;font-size:14px;outline:none}
+.scan-manual button{padding:10px 16px;background:#00e64d;border:none;border-radius:8px;color:#000;font-weight:700;font-size:13px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-logo"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#000"/></svg></div>
+    <div><div class="hdr-title">TireaPark</div><div class="hdr-sub">PANOU ADMIN</div></div>
+    <div class="badge-admin">ADMIN</div>
+  </div>
+
+  <div class="status" id="status-msg"></div>
+
+  <div class="card">
+    <div class="card-title">📱 PAS 1 — SCANEAZĂ SAU GENEREAZĂ COD QR</div>
+    <button class="scan-btn" onclick="openScanner()">📷 SCANEAZĂ COD QR BLOCATOR</button>
+    <div style="text-align:center;font-size:11px;color:rgba(255,255,255,.3);margin-bottom:10px">— sau generează cod nou —</div>
+    <button onclick="generateNewQR()" style="width:100%;padding:14px;background:rgba(0,150,255,.15);border:1px solid rgba(0,150,255,.3);border-radius:12px;color:rgba(100,180,255,.9);font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer">+ GENEREAZĂ COD NOU</button>
+  </div>
+
+  <div class="card" id="qr-card" style="display:none">
+    <div class="card-title">🏷️ COD QR BLOCATOR</div>
+    <div class="qr-wrap">
+      <canvas id="qr-canvas"></canvas>
+      <div class="qr-id" id="qr-id-display">BL-000</div>
+      <div class="qr-sub">Printează și lipește pe blocator</div>
+      <button class="print-btn" onclick="printQR()">🖨️ PRINTEAZĂ QR</button>
+    </div>
+  </div>
+
+  <div class="card" id="gps-card" style="display:none">
+    <div class="card-title">📍 PAS 2 — POZIȚIE GPS</div>
+    <div class="gps-row">
+      <div class="gps-dot" id="gps-dot" style="background:#facc15"></div>
+      <div class="gps-txt" id="gps-txt">Se obține poziția GPS...</div>
+      <div class="gps-coords" id="gps-coords"></div>
+    </div>
+    <button onclick="getGPS()" style="width:100%;margin-top:10px;padding:12px;background:rgba(250,204,21,.1);border:1px solid rgba(250,204,21,.25);border-radius:10px;color:#facc15;font-size:13px;font-weight:600;cursor:pointer">🔄 ACTUALIZEAZĂ GPS</button>
+  </div>
+
+  <div class="card" id="form-card" style="display:none">
+    <div class="card-title">📋 PAS 3 — DATE BLOCATOR</div>
+    <div class="form-group"><label class="form-label">NUME / DENUMIRE PARCARE</label><input class="form-input" id="f-name" type="text" placeholder="Ex: Parcare Unirii A1"></div>
+    <div class="form-group"><label class="form-label">ADRESĂ</label><input class="form-input" id="f-addr" type="text" placeholder="Str. Unirii nr. 5, Cluj-Napoca"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">PREȚ (LEI/ORĂ)</label><input class="form-input" id="f-price" type="number" placeholder="5"></div>
+      <div class="form-group"><label class="form-label">PROGRAM</label><input class="form-input" id="f-hours" type="text" placeholder="08:00–20:00"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">TELEFON</label><input class="form-input" id="f-phone" type="tel" placeholder="+40700000000"></div>
+      <div class="form-group"><label class="form-label">WHATSAPP</label><input class="form-input" id="f-wa" type="tel" placeholder="+40700000000"></div>
+    </div>
+    <div class="form-group"><label class="form-label">EMAIL</label><input class="form-input" id="f-email" type="email" placeholder="contact@parcare.ro"></div>
+    <div class="form-group"><label class="form-label">NOTE</label><input class="form-input" id="f-notes" type="text" placeholder="Ex: Acces 24/7, supraveghere video"></div>
+    <div class="form-group">
+      <label class="form-label">FOTO LOCAȚIE</label>
+      <div class="photo-btn" onclick="document.getElementById('photo-input').click()">📸 Adaugă fotografie</div>
+      <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" onchange="previewPhoto(this)">
+      <img id="photo-preview" alt="preview">
+    </div>
+    <button class="save-btn" id="save-btn" onclick="saveBlocker()">💾 SALVEAZĂ BLOCATORUL</button>
+  </div>
+
+  <div class="card" id="list-card">
+    <div class="card-title">📋 BLOCATOARE ÎNREGISTRATE (<span id="list-count">0</span>)</div>
+    <div id="blocker-list"><div style="text-align:center;padding:20px;color:rgba(255,255,255,.2);font-size:13px">Nu există blocatoare înregistrate</div></div>
+  </div>
+</div>
+
+<div id="scan-modal">
+  <button class="scan-close" onclick="closeScanner()">✕</button>
+  <video id="scan-video-admin" autoplay playsinline muted></video>
+  <div class="scan-frame">
+    <div class="sc tl"></div><div class="sc tr"></div><div class="sc bl"></div><div class="sc br"></div>
+    <div class="sl"></div>
+  </div>
+  <div class="scan-hint">Îndreaptă camera spre codul QR de pe blocator</div>
+  <div class="scan-manual">
+    <input type="text" id="manual-id" placeholder="sau introdu ID manual">
+    <button onclick="useManualId()">OK</button>
+  </div>
+</div>
+
+<script>
+let currentId = null;
+let currentLat = null;
+let currentLng = null;
+let scanStream = null;
+let scanInterval = null;
+let photoBase64 = null;
+let db = null;
+
+/* FIREBASE INIT */
+async function initFirebase() {
+  const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js");
+  const { getDatabase, ref, set, onValue, remove } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js");
+
+  const app = initializeApp({
+    apiKey: "AIzaSyDF63PQ9s2AG9_8ho9u6v-myzDrs_SrtbY",
+    authDomain: "tireapark.firebaseapp.com",
+    databaseURL: "https://tireapark-default-rtdb.firebaseio.com",
+    projectId: "tireapark",
+    storageBucket: "tireapark.firebasestorage.app",
+    messagingSenderId: "503087510644",
+    appId: "1:503087510644:web:18d5e122c67afe110e8d21"
+  });
+
+  db = getDatabase(app);
+  window._fbRef = ref;
+  window._fbSet = set;
+  window._fbRemove = remove;
+
+  onValue(ref(db, 'blocatoare'), snap => {
+    const data = snap.val() || {};
+    const list = Object.values(data);
+    document.getElementById('list-count').textContent = list.length;
+    const el = document.getElementById('blocker-list');
+    if (!list.length) {
+      el.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,.2);font-size:13px">Nu există blocatoare înregistrate</div>';
+      return;
+    }
+    el.innerHTML = list.sort((a,b) => b.createdAt - a.createdAt).map(b => `
+      <div class="blocker-item">
+        <div class="blocker-num">${(b.id||'').split('-').pop()}</div>
+        <div class="blocker-info">
+          <div class="blocker-name">${b.name}</div>
+          <div class="blocker-addr">${b.addr || b.lat + ', ' + b.lng}</div>
+        </div>
+        <div class="blocker-del" onclick="deleteBlocker('${b.id}')">✕</div>
+      </div>
+    `).join('');
+  });
+}
+initFirebase();
+
+/* GENERATE QR */
+function generateNewQR() {
+  const id = 'BL-' + Date.now().toString(36).toUpperCase().slice(-6);
+  setCurrentId(id);
+}
+
+function setCurrentId(id) {
+  currentId = id;
+  document.getElementById('qr-id-display').textContent = id;
+  document.getElementById('qr-card').style.display = 'block';
+  document.getElementById('gps-card').style.display = 'block';
+  document.getElementById('form-card').style.display = 'block';
+
+  const canvas = document.getElementById('qr-canvas');
+  // Așteaptă ca QRCode să fie disponibil
+  function tryQR() {
+    if (typeof QRCode !== 'undefined') {
+      QRCode.toCanvas(canvas, id, {
+        width: 220,
+        margin: 2,
+        color: { dark: '#000000', light: '#ffffff' }
+      }, function(err) {
+        if (err) console.error('QR error:', err);
+      });
+    } else {
+      setTimeout(tryQR, 200);
+    }
+  }
+  tryQR();
+
+  getGPS();
+  setTimeout(() => document.getElementById('qr-card').scrollIntoView({ behavior: 'smooth' }), 100);
+}
+
+/* GPS */
+function getGPS() {
+  document.getElementById('gps-dot').style.background = '#facc15';
+  document.getElementById('gps-txt').textContent = 'Se obține poziția GPS...';
+  document.getElementById('gps-coords').textContent = '';
+
+  if (!navigator.geolocation) {
+    document.getElementById('gps-txt').textContent = 'GPS indisponibil';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      currentLat = pos.coords.latitude.toFixed(7);
+      currentLng = pos.coords.longitude.toFixed(7);
+      document.getElementById('gps-dot').style.background = '#00e64d';
+      document.getElementById('gps-txt').textContent = 'Poziție obținută ✓';
+      document.getElementById('gps-coords').textContent = currentLat + ', ' + currentLng;
+    },
+    err => {
+      document.getElementById('gps-dot').style.background = '#ff5050';
+      document.getElementById('gps-txt').textContent = 'Eroare GPS — activează localizarea';
+    },
+    { enableHighAccuracy: true, timeout: 15000 }
+  );
+}
+
+/* SCANNER */
+async function openScanner() {
+  document.getElementById('scan-modal').classList.add('show');
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' }
+    });
+    const video = document.getElementById('scan-video-admin');
+    video.srcObject = scanStream;
+    video.play();
+    if ('BarcodeDetector' in window) {
+      const detector = new BarcodeDetector({ formats: ['qr_code'] });
+      scanInterval = setInterval(async () => {
+        try {
+          const codes = await detector.detect(video);
+          if (codes.length > 0) { closeScanner(); setCurrentId(codes[0].rawValue); }
+        } catch(e) {}
+      }, 500);
+    }
+  } catch(e) {
+    alert('Nu s-a putut accesa camera. Folosește câmpul manual de mai jos.');
+  }
+}
+
+function closeScanner() {
+  if (scanStream) scanStream.getTracks().forEach(t => t.stop());
+  if (scanInterval) clearInterval(scanInterval);
+  scanStream = null; scanInterval = null;
+  document.getElementById('scan-modal').classList.remove('show');
+}
+
+function useManualId() {
+  const id = document.getElementById('manual-id').value.trim();
+  if (id) { closeScanner(); setCurrentId(id); }
+}
+
+/* PHOTO */
+function previewPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    photoBase64 = e.target.result;
+    const prev = document.getElementById('photo-preview');
+    prev.src = photoBase64;
+    prev.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+/* SAVE */
+async function saveBlocker() {
+  if (!currentId) { showStatus('Scanează sau generează un cod QR mai întâi!', 'err'); return; }
+  if (!currentLat) { showStatus('Obține mai întâi poziția GPS!', 'err'); return; }
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { showStatus('Completează numele parcării!', 'err'); return; }
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true; btn.textContent = 'SE SALVEAZĂ...';
+
+  const data = {
+    id: currentId,
+    lat: parseFloat(currentLat),
+    lng: parseFloat(currentLng),
+    name: name,
+    addr: document.getElementById('f-addr').value.trim(),
+    price: parseFloat(document.getElementById('f-price').value) || 5,
+    hours: document.getElementById('f-hours').value.trim() || '08:00–20:00',
+    phone: document.getElementById('f-phone').value.trim(),
+    whatsapp: document.getElementById('f-wa').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+    notes: document.getElementById('f-notes').value.trim(),
+    photo: photoBase64 || null,
+    free: true,
+    createdAt: Date.now()
+  };
+
+  try {
+    await window._fbSet(window._fbRef(db, 'blocatoare/' + currentId), data);
+    showStatus('✓ Blocatorul ' + currentId + ' salvat cu succes!', 'ok');
+    resetForm();
+  } catch(e) {
+    showStatus('Eroare: ' + e.message, 'err');
+  }
+
+  btn.disabled = false; btn.textContent = '💾 SALVEAZĂ BLOCATORUL';
+}
+
+function resetForm() {
+  currentId = null; currentLat = null; currentLng = null; photoBase64 = null;
+  ['f-name','f-addr','f-price','f-hours','f-phone','f-wa','f-email','f-notes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('photo-preview').style.display = 'none';
+  document.getElementById('qr-card').style.display = 'none';
+  document.getElementById('gps-card').style.display = 'none';
+  document.getElementById('form-card').style.display = 'none';
+}
+
+async function deleteBlocker(id) {
+  if (confirm('Ștergi blocatorul ' + id + '?')) {
+    await window._fbRemove(window._fbRef(db, 'blocatoare/' + id));
+  }
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg; el.className = 'status ' + type; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+
+/* Expune funcții global */
+window.generateNewQR = generateNewQR;
+window.openScanner = openScanner;
+window.closeScanner = closeScanner;
+window.useManualId = useManualId;
+window.previewPhoto = previewPhoto;
+window.saveBlocker = saveBlocker;
+window.deleteBlocker = deleteBlocker;
+window.getGPS = getGPS;
+window.printQR = function() {
+  const canvas = document.getElementById('qr-canvas');
+  const id = document.getElementById('qr-id-display').textContent;
+  const win = window.open('', '_blank');
+  win.document.write(`<html><body style="text-align:center;font-family:sans-serif;padding:30px">
+    <img src="${canvas.toDataURL()}" style="width:250px;height:250px"><br><br>
+    <b style="font-size:22px">${id}</b><br><br>
+    <span style="font-size:14px">TireaPark · Scanează pentru parcare</span>
+    <script>window.onload=function(){window.print();}<\/script>
+  </body></html>`);
+  win.document.close();
+};
+</script>
+</body>
+</html>
