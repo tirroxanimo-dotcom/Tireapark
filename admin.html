@@ -196,7 +196,7 @@ var QRGen=(function(){
       // rebuild properly
       var data=encAN(s);var gen=poly(16);var pad=data.concat(new Array(16).fill(0));var ec=div(pad,gen).slice(0,16);var codewords=data.concat(ec);
       var m=mkm();finder(m,0,0);finder(m,0,S-7);finder(m,S-7,0);timing(m);align(m);resFmt(m);place(m,codewords);applyMask(m);fmtInfo(m);
-      var sz=220,mod=Math.floor(sz/S),off=Math.floor((sz-mod*S)/2);
+      var sz=160,mod=Math.floor(sz/S),off=Math.floor((sz-mod*S)/2);
       var rects='';
       for(var r=0;r<S;r++)for(var c=0;c<S;c++)
         if(m[r][c]===1)rects+='<rect x="'+(off+c*mod)+'" y="'+(off+r*mod)+'" width="'+mod+'" height="'+mod+'"/>';
