@@ -239,78 +239,102 @@ input,button,select,textarea{font-size:16px!important}
     <button onclick="closeAgent()" style="width:32px;height:32px;background:rgba(255,255,255,.08);border:none;border-radius:8px;color:#fff;font-size:16px;cursor:pointer">✕</button>
   </div>
   <div style="padding:16px;display:flex;flex-direction:column;gap:12px;padding-bottom:calc(24px + env(safe-area-inset-bottom))">
+
+    <!-- AVATAR -->
     <div style="background:linear-gradient(135deg,rgba(0,200,255,.12),rgba(0,100,200,.08));border:1px solid rgba(0,200,255,.2);border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px">
       <div id="agent-avatar" style="width:54px;height:54px;background:rgba(0,200,255,.2);border:2px solid rgba(0,200,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:#00c8ff;flex-shrink:0">?</div>
       <div style="flex:1;min-width:0">
         <div id="agent-name-display" style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff">Numele tau</div>
-        <div id="agent-email-display" style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px">email@exemplu.com</div>
-        <div style="display:flex;align-items:center;gap:5px;margin-top:6px"><span id="agent-points" style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#facc15">0</span><span style="font-size:10px;color:rgba(255,255,255,.3)">PUNCTE</span></div>
-      </div>
-      <button onclick="toggleEdit()" style="padding:6px 12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.5);font-size:11px;font-weight:600;cursor:pointer">EDITEAZA</button>
-    </div>
-    <div id="agent-edit" style="display:none;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px;flex-direction:column;gap:10px">
-      <input id="inp-name" type="text" placeholder="Numele tau" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;color:#fff;outline:none;width:100%">
-      <input id="inp-email" type="email" placeholder="Email" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;color:#fff;outline:none;width:100%">
-      <input id="inp-phone" type="tel" placeholder="Telefon" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;color:#fff;outline:none;width:100%">
-      <button onclick="saveProfile()" style="padding:13px;background:#fff;border:none;border-radius:10px;color:#000;font-size:13px;font-weight:700;cursor:pointer">SALVEAZA</button>
-    </div>
-    <div style="background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.15);border-radius:14px;padding:16px">
-      <div style="font-size:10px;color:rgba(255,215,0,.5);letter-spacing:.1em;margin-bottom:10px">PUNCTE DE LOIALITATE</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div><div id="points-display" style="font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:#facc15">0</div><div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:1px">puncte disponibile</div></div>
-        <div style="text-align:right"><div style="font-size:11px;color:rgba(255,255,255,.4)">10 pct = 1 leu reducere</div><div id="points-value" style="font-size:13px;font-weight:600;color:#facc15;margin-top:3px">= 0 lei</div></div>
-      </div>
-      <div style="background:rgba(255,215,0,.08);border-radius:8px;padding:10px 12px;font-size:11px;color:rgba(255,255,255,.4)">Castigi <b style="color:#facc15">5 puncte</b> per rezervare. La <b style="color:#facc15">100 pct</b> = 1 ora gratuita!</div>
-    </div>
-    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
-      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:12px">MASINA MEA</div>
-      <div style="display:flex;gap:8px">
-        <input id="inp-car" type="text" placeholder="Ex: Dacia Logan" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 11px;color:#fff;font-size:12px;outline:none">
-        <input id="inp-plate" type="text" placeholder="CJ-123-ABC" style="width:110px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 11px;color:#fff;font-size:12px;outline:none;text-transform:uppercase">
-        <button onclick="saveCar()" style="padding:9px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer">OK</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-        <div style="font-size:13px;color:rgba(255,255,255,.5)" id="car-display">-</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.3)" id="plate-display"></div>
-      </div>
-    </div>
-    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
-      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:12px">ABONAMENT</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;text-align:center;cursor:pointer" onclick="selectPlan('lunar')">
-          <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#fff">49 lei</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px">/ LUNAR</div>
-          <div style="font-size:9px;color:#00e64d;margin-top:5px">NELIMITAT</div>
-        </div>
-        <div style="background:rgba(0,200,255,.08);border:1px solid rgba(0,200,255,.25);border-radius:10px;padding:12px;text-align:center;cursor:pointer" onclick="selectPlan('anual')">
-          <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#00c8ff">399 lei</div>
-          <div style="font-size:10px;color:rgba(0,200,255,.5);margin-top:2px">/ ANUAL</div>
-          <div style="font-size:9px;color:#facc15;margin-top:5px">-32% REDUCERE</div>
+        <div id="agent-phone-display" style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px">Telefon neverificat</div>
+        <div style="margin-top:6px">
+          <div id="verify-badge" style="display:inline-block;font-size:9px;font-weight:700;padding:3px 8px;border-radius:6px;background:rgba(255,100,0,.15);color:#ff8c42;border:1px solid rgba(255,100,0,.25);font-family:'Space Grotesk',sans-serif;letter-spacing:.06em">NEVERIFICAT</div>
         </div>
       </div>
-      <div id="plan-msg" style="display:none;margin-top:10px;text-align:center;font-size:12px;color:#00e64d"></div>
     </div>
-    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
-      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:12px">NOTIFICARI</div>
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:13px;color:rgba(255,255,255,.7)">Loc s-a eliberat</div><div onclick="toggleNotif(this)" data-on="1" style="width:40px;height:22px;background:#00e64d;border-radius:11px;position:relative;cursor:pointer"><div style="position:absolute;top:3px;right:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:all .2s"></div></div></div>
-        <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:13px;color:rgba(255,255,255,.7)">Rezervare expira</div><div onclick="toggleNotif(this)" data-on="1" style="width:40px;height:22px;background:#00e64d;border-radius:11px;position:relative;cursor:pointer"><div style="position:absolute;top:3px;right:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:all .2s"></div></div></div>
-        <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:13px;color:rgba(255,255,255,.7)">Oferte speciale</div><div onclick="toggleNotif(this)" data-on="0" style="width:40px;height:22px;background:rgba(255,255,255,.15);border-radius:11px;position:relative;cursor:pointer"><div style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:all .2s"></div></div></div>
+
+    <!-- DATE PERSONALE -->
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:14px;font-family:'Space Grotesk',sans-serif;font-weight:700">👤 DATE PERSONALE</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.08em;margin-bottom:5px">NUME COMPLET</div>
+          <input id="inp-name" type="text" placeholder="Ex: Ion Popescu" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:12px 13px;color:#fff;outline:none">
+        </div>
+        <div>
+          <div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.08em;margin-bottom:5px">EMAIL</div>
+          <input id="inp-email" type="email" placeholder="exemplu@email.com" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:12px 13px;color:#fff;outline:none">
+        </div>
+        <div>
+          <div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.08em;margin-bottom:5px">TELEFON (cu prefix +40)</div>
+          <input id="inp-phone" type="tel" placeholder="+40700000000" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:12px 13px;color:#fff;outline:none">
+        </div>
+        <div>
+          <div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.08em;margin-bottom:5px">NUMĂR MAȘINĂ</div>
+          <input id="inp-plate" type="text" placeholder="CJ-123-ABC" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:12px 13px;color:#fff;outline:none;text-transform:uppercase">
+        </div>
+        <button onclick="saveProfile()" style="width:100%;padding:14px;background:#fff;border:none;border-radius:10px;color:#000;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.04em">SALVEAZĂ DATELE</button>
       </div>
     </div>
-    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
-      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:12px">SUPORT</div>
-      <a href="tel:+40700000000" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);text-decoration:none"><div style="font-size:13px;color:rgba(255,255,255,.7)">Suna-ne</div><div style="font-size:12px;color:rgba(0,200,255,.7)">+40 700 000 000</div></a>
-      <a href="mailto:support@tireapark.ro" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;text-decoration:none"><div style="font-size:13px;color:rgba(255,255,255,.7)">Email suport</div><div style="font-size:12px;color:rgba(0,200,255,.7)">support@tireapark.ro</div></a>
-    </div>
-    <div style="background:rgba(0,230,77,.06);border:1px solid rgba(0,230,77,.15);border-radius:14px;padding:16px">
-      <div style="font-size:10px;color:rgba(0,230,77,.5);letter-spacing:.1em;margin-bottom:8px">INVITA PRIETENI</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:10px">Invita un prieten si ambii primiti <b style="color:#00e64d">50 puncte</b> gratuit!</div>
-      <div style="display:flex;gap:8px">
-        <div id="referral-code" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#00e64d;letter-spacing:.08em">TIREA-????</div>
-        <button onclick="copyReferral()" style="padding:10px 14px;background:rgba(0,230,77,.15);border:1px solid rgba(0,230,77,.25);border-radius:8px;color:#00e64d;font-size:12px;font-weight:600;cursor:pointer">COPIAZA</button>
+
+    <!-- VERIFICARE WHATSAPP -->
+    <div id="verify-section" style="background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.2);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(37,211,102,.7);letter-spacing:.1em;margin-bottom:4px;font-family:'Space Grotesk',sans-serif;font-weight:700">💬 VERIFICARE NUMĂR TELEFON</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:14px">Prin WhatsApp · 100% gratuit</div>
+      <div id="verify-step1">
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:10px;line-height:1.5">1. Introdu telefonul sus, salvează, apoi apasă butonul de mai jos.<br>2. Se deschide WhatsApp cu codul pre-scris — trimite-l.<br>3. Întoarce-te și introdu codul primit.</div>
+        <button onclick="sendWAVerify()" style="width:100%;padding:14px;background:linear-gradient(135deg,#25d366,#128c7e);border:none;border-radius:10px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer">
+          💬 VERIFICĂ PE WHATSAPP
+        </button>
+      </div>
+      <div id="verify-step2" style="display:none;margin-top:0">
+        <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:10px">Introdu codul de 6 cifre pe care l-ai trimis:</div>
+        <div style="display:flex;gap:8px">
+          <input id="inp-verify-code" type="tel" inputmode="numeric" placeholder="• • • • • •" maxlength="6" style="flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(37,211,102,.3);border-radius:9px;padding:12px 13px;color:#fff;outline:none;font-family:'Space Grotesk',sans-serif;font-size:18px;letter-spacing:.3em;text-align:center">
+          <button onclick="confirmWACode()" style="padding:12px 18px;background:#25d366;border:none;border-radius:9px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer">OK</button>
+        </div>
+        <div id="verify-error" style="display:none;font-size:11px;color:#ff6b6b;margin-top:8px;text-align:center"></div>
+        <button onclick="resendWACode()" style="width:100%;margin-top:8px;padding:10px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:9px;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer">Retrimite codul</button>
+      </div>
+      <div id="verify-done" style="display:none;text-align:center;padding:10px 0">
+        <div style="font-size:28px;margin-bottom:6px">✅</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#25d366">Număr verificat!</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">Contul tău este activ</div>
       </div>
     </div>
+
+    <!-- SUPORT -->
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:14px;font-family:'Space Grotesk',sans-serif;font-weight:700">🎧 SUPORT</div>
+      <a id="suport-tel-link" href="tel:+" style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);text-decoration:none">
+        <div style="width:32px;height:32px;background:rgba(0,200,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">📞</div>
+        <div style="flex:1"><div style="font-size:13px;color:rgba(255,255,255,.8)">Telefon suport</div><div id="suport-tel-nr" style="font-size:11px;color:rgba(0,200,255,.6);margin-top:1px">În curând...</div></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="rgba(255,255,255,.2)" stroke-width="2" stroke-linecap="round"/></svg>
+      </a>
+      <a id="suport-wa-link" href="https://wa.me/" target="_blank" style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);text-decoration:none">
+        <div style="width:32px;height:32px;background:rgba(37,211,102,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">💬</div>
+        <div style="flex:1"><div style="font-size:13px;color:rgba(255,255,255,.8)">WhatsApp suport</div><div id="suport-wa-nr" style="font-size:11px;color:rgba(37,211,102,.6);margin-top:1px">În curând...</div></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="rgba(255,255,255,.2)" stroke-width="2" stroke-linecap="round"/></svg>
+      </a>
+      <a id="suport-email-link" href="mailto:" style="display:flex;align-items:center;gap:12px;padding:11px 0;text-decoration:none">
+        <div style="width:32px;height:32px;background:rgba(68,138,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">✉️</div>
+        <div style="flex:1"><div style="font-size:13px;color:rgba(255,255,255,.8)">Email suport</div><div id="suport-email-adresa" style="font-size:11px;color:rgba(68,138,255,.6);margin-top:1px">În curând...</div></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="rgba(255,255,255,.2)" stroke-width="2" stroke-linecap="round"/></svg>
+      </a>
+    </div>
+
+    <!-- INVITA PRIETENI -->
+    <div style="background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.18);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(37,211,102,.7);letter-spacing:.1em;margin-bottom:6px;font-family:'Space Grotesk',sans-serif;font-weight:700">🎁 INVITĂ UN PRIETEN</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:14px">Trimite linkul pe WhatsApp — ambii primiți <b style="color:#25d366">50 puncte</b> gratuit!</div>
+      <button onclick="shareWA()" style="width:100%;padding:14px;background:linear-gradient(135deg,#25d366,#128c7e);border:none;border-radius:10px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer">
+        💬 TRIMITE PE WHATSAPP
+      </button>
+      <div style="margin-top:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between">
+        <div id="referral-code" style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#25d366;letter-spacing:.1em">TIREA-????</div>
+        <button onclick="copyReferral()" style="padding:6px 12px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.25);border-radius:6px;color:#25d366;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">COPIAZĂ</button>
+      </div>
+    </div>
+
     <div style="padding:8px 0;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,.12)">TIREAPARK v1.0 · CLUJ-NAPOCA 2026</div></div>
   </div>
 </div>
@@ -666,70 +690,182 @@ function doNavigate(){
 }
 
 // ── AGENT ─────────────────────────────────────────────
+// Numărul tău de WhatsApp business (se completează mai târziu din admin)
+var SUPORT_CONFIG = {
+  tel: '',       // ex: +40700000000
+  wa: '',        // ex: 40700000000 (fara +)
+  email: ''      // ex: contact@tireapark.ro
+};
+
+// Citeste config suport din Firebase
+db.ref('config/suport').on('value', function(snap){
+  var s = snap.val();
+  if(!s) return;
+  if(s.tel){
+    SUPORT_CONFIG.tel = s.tel;
+    SUPORT_CONFIG.wa = s.wa || s.tel.replace(/[^0-9]/g,'');
+    SUPORT_CONFIG.email = s.email || '';
+    document.getElementById('suport-tel-nr').textContent = s.tel;
+    document.getElementById('suport-wa-nr').textContent = s.wa ? '+'+s.wa : s.tel;
+    document.getElementById('suport-email-adresa').textContent = s.email || '';
+    document.getElementById('suport-tel-link').href = 'tel:'+s.tel;
+    document.getElementById('suport-wa-link').href = 'https://wa.me/'+(s.wa||s.tel.replace(/[^0-9]/g,''));
+    document.getElementById('suport-email-link').href = 'mailto:'+(s.email||'');
+  }
+});
+
+var waVerifyCode = '';
+
 function getProfile(){try{return JSON.parse(localStorage.getItem('tp_profile')||'{}');}catch(e){return{};}}
+
 function openAgent(){
   document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('act');});
   document.querySelectorAll('.ni')[3].classList.add('act');
   var p=getProfile();
-  if(p.name){document.getElementById('agent-name-display').textContent=p.name;document.getElementById('agent-avatar').textContent=p.name[0].toUpperCase();}
-  if(p.email)document.getElementById('agent-email-display').textContent=p.email;
-  if(p.car)document.getElementById('car-display').textContent=p.car;
-  if(p.plate)document.getElementById('plate-display').textContent=p.plate;
-  if(p.name)document.getElementById('inp-name').value=p.name;
-  if(p.email)document.getElementById('inp-email').value=p.email;
-  if(p.phone)document.getElementById('inp-phone').value=p.phone;
-  if(p.car)document.getElementById('inp-car').value=p.car;
-  if(p.plate)document.getElementById('inp-plate').value=p.plate;
-  var pts=parseInt(localStorage.getItem('tp_points')||'0');
-  document.getElementById('agent-points').textContent=pts;
-  document.getElementById('points-display').textContent=pts;
-  document.getElementById('points-value').textContent='= '+Math.floor(pts/10)+' lei';
+  if(p.name){
+    document.getElementById('agent-name-display').textContent=p.name;
+    document.getElementById('agent-avatar').textContent=p.name[0].toUpperCase();
+    document.getElementById('inp-name').value=p.name;
+  }
+  if(p.email) document.getElementById('inp-email').value=p.email;
+  if(p.phone){
+    document.getElementById('inp-phone').value=p.phone;
+    document.getElementById('agent-phone-display').textContent=p.phone;
+  }
+  if(p.plate) document.getElementById('inp-plate').value=p.plate;
+
+  // Status verificare
+  var verified = localStorage.getItem('tp_verified')==='1';
+  updateVerifyUI(verified);
+
+  // Cod referral
   var code=localStorage.getItem('tp_ref');
   if(!code){code='TIREA-'+Math.random().toString(36).substr(2,5).toUpperCase();localStorage.setItem('tp_ref',code);}
   document.getElementById('referral-code').textContent=code;
+
   document.getElementById('agent-panel').style.display='flex';
 }
+
+function updateVerifyUI(verified){
+  var badge = document.getElementById('verify-badge');
+  var step1 = document.getElementById('verify-step1');
+  var step2 = document.getElementById('verify-step2');
+  var done  = document.getElementById('verify-done');
+  if(verified){
+    badge.textContent='✓ VERIFICAT';
+    badge.style.background='rgba(37,211,102,.15)';
+    badge.style.color='#25d366';
+    badge.style.border='1px solid rgba(37,211,102,.3)';
+    step1.style.display='none';
+    step2.style.display='none';
+    done.style.display='block';
+  } else {
+    badge.textContent='NEVERIFICAT';
+    badge.style.background='rgba(255,100,0,.15)';
+    badge.style.color='#ff8c42';
+    badge.style.border='1px solid rgba(255,100,0,.25)';
+    done.style.display='none';
+    step1.style.display='block';
+    step2.style.display='none';
+  }
+}
+
 function closeAgent(){
   document.getElementById('agent-panel').style.display='none';
   document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('act');});
   document.querySelectorAll('.ni')[0].classList.add('act');
 }
-function toggleEdit(){var ed=document.getElementById('agent-edit');ed.style.display=ed.style.display==='flex'?'none':'flex';}
+
 function saveProfile(){
   var p=getProfile();
   p.name=document.getElementById('inp-name').value.trim();
   p.email=document.getElementById('inp-email').value.trim();
   p.phone=document.getElementById('inp-phone').value.trim();
-  localStorage.setItem('tp_profile',JSON.stringify(p));
-  if(p.name){document.getElementById('agent-name-display').textContent=p.name;document.getElementById('agent-avatar').textContent=p.name[0].toUpperCase();}
-  if(p.email)document.getElementById('agent-email-display').textContent=p.email;
-  document.getElementById('agent-edit').style.display='none';
-}
-function saveCar(){
-  var p=getProfile();
-  p.car=document.getElementById('inp-car').value.trim();
   p.plate=document.getElementById('inp-plate').value.trim().toUpperCase();
   localStorage.setItem('tp_profile',JSON.stringify(p));
-  if(p.car)document.getElementById('car-display').textContent=p.car;
-  if(p.plate)document.getElementById('plate-display').textContent=p.plate;
+  if(p.name){
+    document.getElementById('agent-name-display').textContent=p.name;
+    document.getElementById('agent-avatar').textContent=p.name[0].toUpperCase();
+  }
+  if(p.phone) document.getElementById('agent-phone-display').textContent=p.phone;
+  // Feedback vizual
+  var btn = event.target;
+  btn.textContent='✓ SALVAT!';
+  btn.style.background='#25d366';
+  btn.style.color='#fff';
+  setTimeout(function(){btn.textContent='SALVEAZĂ DATELE';btn.style.background='#fff';btn.style.color='#000';},1800);
 }
-function selectPlan(type){
-  var msg=document.getElementById('plan-msg');
-  msg.style.display='block';
-  msg.textContent=type==='lunar'?'Abonament lunar activat - 49 lei/luna':'Abonament anual activat - 399 lei/an';
-  localStorage.setItem('tp_plan',type);
+
+// ── VERIFICARE WHATSAPP ─────────────────────────────────
+function sendWAVerify(){
+  var p = getProfile();
+  var phone = p.phone || document.getElementById('inp-phone').value.trim();
+  if(!phone){
+    alert('Introdu mai întâi numărul de telefon și apasă SALVEAZĂ!');
+    return;
+  }
+  // Generează cod 6 cifre
+  waVerifyCode = '';
+  for(var i=0;i<6;i++) waVerifyCode += Math.floor(Math.random()*10);
+  localStorage.setItem('tp_verify_code', waVerifyCode);
+  localStorage.setItem('tp_verify_phone', phone);
+
+  // Numărul de WA al platformei (business) — dacă e configurat
+  var waTarget = SUPORT_CONFIG.wa || '40700000000';
+  var msg = encodeURIComponent('TireaPark verificare: '+waVerifyCode+' (nu trimite altundeva)');
+  var waUrl = 'https://wa.me/'+waTarget+'?text='+msg;
+
+  window.open(waUrl, '_blank');
+
+  // Afișează step2 după 1.5s
+  setTimeout(function(){
+    document.getElementById('verify-step1').style.display='none';
+    document.getElementById('verify-step2').style.display='block';
+    document.getElementById('verify-error').style.display='none';
+    document.getElementById('inp-verify-code').value='';
+  }, 1500);
 }
-function toggleNotif(el){
-  var on=el.dataset.on==='1';
-  el.dataset.on=on?'0':'1';
-  el.style.background=on?'rgba(255,255,255,.15)':'#00e64d';
-  var dot=el.querySelector('div');
-  dot.style.left=on?'3px':''; dot.style.right=on?'':'3px';
+
+function confirmWACode(){
+  var entered = document.getElementById('inp-verify-code').value.trim();
+  var saved   = localStorage.getItem('tp_verify_code');
+  if(!saved){ alert('Încearcă din nou.'); return; }
+  if(entered === saved){
+    localStorage.setItem('tp_verified','1');
+    localStorage.removeItem('tp_verify_code');
+    updateVerifyUI(true);
+  } else {
+    document.getElementById('verify-error').textContent='Cod incorect. Mai încearcă!';
+    document.getElementById('verify-error').style.display='block';
+    document.getElementById('inp-verify-code').value='';
+  }
 }
+
+function resendWACode(){
+  document.getElementById('verify-step2').style.display='none';
+  document.getElementById('verify-step1').style.display='block';
+}
+
+// ── INVITATIE WHATSAPP ──────────────────────────────────
+function shareWA(){
+  var code = document.getElementById('referral-code').textContent;
+  var msg = encodeURIComponent(
+    'Salut! Te invit pe TireaPark - parcare inteligenta in Cluj-Napoca\n' +
+    'Foloseste codul meu: ' + code + '\n' +
+    'Primesti 50 puncte gratuit la prima parcare!\n' +
+    'https://tireapark.ro'
+  );
+  window.open('https://wa.me/?text='+msg, '_blank');
+}
+
 function copyReferral(){
   var code=document.getElementById('referral-code').textContent;
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(code).then(function(){alert('Cod copiat: '+code);}).catch(function(){alert('Cod: '+code);});
+    navigator.clipboard.writeText(code).then(function(){
+      var btn = event.target;
+      btn.textContent='✓ COPIAT';
+      setTimeout(function(){btn.textContent='COPIAZĂ';},1500);
+    }).catch(function(){alert('Cod: '+code);});
   } else {
     alert('Cod: '+code);
   }
