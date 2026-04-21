@@ -103,9 +103,137 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2d3748;font-family:
 input,button,select,textarea{font-size:16px!important}
 *{touch-action:manipulation}
 #map canvas{touch-action:none}
+
+/* AUTH SCREENS */
+.auth-screen{position:fixed;inset:0;z-index:9998;background:#2d3748;display:none;flex-direction:column;overflow-y:auto}
+.auth-screen.show{display:flex}
+.auth-inner{flex:1;display:flex;flex-direction:column;padding:max(20px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom))}
+.auth-back{width:40px;height:40px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:28px;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;flex-shrink:0}
+.auth-title{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#fff;margin-bottom:6px}
+.auth-sub{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:28px;line-height:1.55}
+.auth-label{font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:6px;display:block;font-weight:600}
+.auth-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 15px;color:#fff;outline:none;transition:border-color .2s}
+.auth-input:focus{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.08)}
+.auth-input::placeholder{color:rgba(255,255,255,.22)}
+.auth-err{font-size:11px;color:rgba(255,80,100,.8);margin-top:5px;display:none}
+.auth-group{margin-bottom:14px}
+.auth-btn{width:100%;padding:17px;background:#fff;border:none;border-radius:12px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#000;cursor:pointer;letter-spacing:.03em;transition:all .2s}
+.auth-btn:active{background:#e8e8e8}
+.auth-btn:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.3)}
+.auth-btn-ghost{width:100%;padding:14px;background:transparent;border:1px solid rgba(255,255,255,.12);border-radius:12px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:rgba(255,255,255,.5);cursor:pointer;letter-spacing:.03em;margin-top:10px}
+.auth-btn-ghost:active{background:rgba(255,255,255,.05)}
+.auth-footer{margin-top:auto;padding-top:24px}
+.ob-slides-wrap{overflow:hidden;flex:1;min-height:0}
+.ob-slides{display:flex;width:300%;height:100%;transition:transform .4s cubic-bezier(.16,1,.3,1)}
+.ob-slide{width:33.333%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center}
+.ob-icon{width:96px;height:96px;border-radius:28px;display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:28px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
+.ob-title{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:12px;line-height:1.25}
+.ob-sub{font-size:14px;color:rgba(255,255,255,.45);line-height:1.6;max-width:290px}
+.ob-dots{display:flex;gap:7px;justify-content:center;padding:16px 0}
+.ob-dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.2);transition:all .3s}
+.ob-dot.act{width:20px;background:#fff}
+.otp-row{display:flex;gap:9px;justify-content:center;margin:20px 0}
+.otp-box{width:48px;height:56px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;text-align:center;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;outline:none;transition:all .2s}
+.otp-box:focus{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.09)}
+.otp-box.err{border-color:rgba(255,60,80,.5);background:rgba(255,60,80,.06)}
+.otp-timer-row{font-size:12px;color:rgba(255,255,255,.3);text-align:center}
+.otp-timer-row b{color:rgba(255,255,255,.6)}
+.resend-btn{font-size:13px;color:rgba(66,133,244,.8);background:none;border:none;padding:8px;text-align:center;width:100%;cursor:pointer;display:none}
+.plate-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+.plate-item{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px}
+.plate-num{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:#fff;flex:1;letter-spacing:.06em}
+.plate-del{width:28px;height:28px;background:rgba(255,60,80,.08);border:1px solid rgba(255,60,80,.15);border-radius:7px;color:rgba(255,80,100,.6);font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.add-plate-row{display:flex;gap:8px}
+.add-plate-input{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 14px;color:#fff;outline:none;text-transform:uppercase;letter-spacing:.07em}
+.add-plate-btn{padding:13px 15px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
+
+
+<!-- ONBOARDING -->
+<div class="auth-screen" id="scr-onboard">
+  <div class="ob-slides-wrap">
+    <div class="ob-slides" id="ob-slides">
+      <div class="ob-slide"><div class="ob-icon">&#127359;</div><div class="ob-title">Gaseste loc de parcare in Cluj</div><div class="ob-sub">Blocatoare inteligente in timp real &mdash; vezi ce e liber chiar acum pe harta.</div></div>
+      <div class="ob-slide"><div class="ob-icon">&#128241;</div><div class="ob-title">Scaneaza si parcheza instant</div><div class="ob-sub">Scanezi codul QR de pe blocator, platesti si blocatorul coboara automat.</div></div>
+      <div class="ob-slide"><div class="ob-icon">&#9889;</div><div class="ob-title">Platesti exact cat stai</div><div class="ob-sub">Cand pleci, senzorul detecteaza si blocatorul se ridica. Diferenta se ajusteaza automat.</div></div>
+    </div>
+  </div>
+  <div class="ob-dots"><div class="ob-dot act" id="dot-0"></div><div class="ob-dot" id="dot-1"></div><div class="ob-dot" id="dot-2"></div></div>
+  <div style="padding:0 20px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px">
+    <button class="auth-btn" id="ob-next-btn" onclick="obNext()">CONTINUA</button>
+    <button class="auth-btn-ghost" onclick="showAuthScreen('scr-phone')">Am deja cont &mdash; Autentifica-ma</button>
+  </div>
+</div>
+<!-- TELEFON -->
+<div class="auth-screen" id="scr-phone">
+  <div class="auth-inner">
+    <button class="auth-back" onclick="showAuthScreen('scr-onboard')">&#8592;</button>
+    <div class="auth-title">Numarul tau de telefon</div>
+    <div class="auth-sub">Iti trimitem un cod SMS pentru a confirma ca numarul iti apartine.</div>
+    <div class="auth-group">
+      <label class="auth-label">TELEFON</label>
+      <div style="display:flex;gap:8px">
+        <div style="width:68px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 10px;text-align:center;font-weight:600;color:#fff;flex-shrink:0">&#127479;&#127476; +40</div>
+        <input class="auth-input" id="a-phone" type="tel" inputmode="numeric" placeholder="7XX XXX XXX" maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)" style="flex:1">
+      </div>
+      <div class="auth-err" id="a-err-phone">Introdu un numar valid de 9 cifre.</div>
+    </div>
+    <div style="font-size:12px;color:rgba(255,255,255,.25);line-height:1.5">Prin continuare esti de acord cu Termenii si Conditiile TireaPark.</div>
+    <div class="auth-footer"><button class="auth-btn" id="a-send-btn" onclick="aSendOTP()">TRIMITE COD SMS</button></div>
+  </div>
+</div>
+<!-- OTP -->
+<div class="auth-screen" id="scr-otp">
+  <div class="auth-inner">
+    <button class="auth-back" onclick="showAuthScreen('scr-phone')">&#8592;</button>
+    <div class="auth-title">Cod de verificare</div>
+    <div class="auth-sub" id="a-otp-sub">Am trimis un cod de 6 cifre la numarul tau.</div>
+    <div class="otp-row">
+      <input class="otp-box" id="otp0" type="tel" inputmode="numeric" maxlength="1" oninput="aOtpInput(this,0)">
+      <input class="otp-box" id="otp1" type="tel" inputmode="numeric" maxlength="1" oninput="aOtpInput(this,1)">
+      <input class="otp-box" id="otp2" type="tel" inputmode="numeric" maxlength="1" oninput="aOtpInput(this,2)">
+      <input class="otp-box" id="otp3" type="tel" inputmode="numeric" maxlength="1" oninput="aOtpInput(this,3)">
+      <input class="otp-box" id="otp4" type="tel" inputmode="numeric" maxlength="1" oninput="aOtpInput(this,4)">
+      <input class="otp-box" id="otp5" type="tel" inputmode="numeric" maxlength="1" oninput="aOtpInput(this,5)">
+    </div>
+    <div class="auth-err" id="a-err-otp" style="text-align:center">Cod incorect. Incearca din nou.</div>
+    <div class="otp-timer-row" id="a-timer-row">Retrimite codul in <b id="a-countdown">60</b>s</div>
+    <button class="resend-btn" id="a-resend-btn" onclick="aSendOTP()">Retrimite codul SMS</button>
+    <div class="auth-footer"><button class="auth-btn" id="a-verify-btn" onclick="aVerifyOTP()">VERIFICA CODUL</button></div>
+  </div>
+</div>
+<!-- DATE PROFIL -->
+<div class="auth-screen" id="scr-profile-setup">
+  <div class="auth-inner">
+    <div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.14em;font-family:'Space Grotesk',sans-serif;font-weight:700;margin-bottom:20px;padding-top:max(4px,env(safe-area-inset-top))">TELEFON VERIFICAT &#10003;</div>
+    <div class="auth-title">Datele tale</div>
+    <div class="auth-sub">Completeaza pentru a putea rezerva si plati parcari.</div>
+    <div class="auth-group"><label class="auth-label">NUME COMPLET</label><input class="auth-input" id="a-name" type="text" placeholder="Ion Popescu" autocomplete="name"><div class="auth-err" id="a-err-name">Introdu numele complet.</div></div>
+    <div class="auth-group"><label class="auth-label">EMAIL</label><input class="auth-input" id="a-email" type="email" placeholder="ion@exemplu.com" autocomplete="email"><div class="auth-err" id="a-err-email">Introdu un email valid.</div></div>
+    <div class="auth-group"><label class="auth-label">PAROLA</label><input class="auth-input" id="a-pass" type="password" placeholder="Minim 6 caractere" autocomplete="new-password"><div class="auth-err" id="a-err-pass">Parola trebuie sa aiba minim 6 caractere.</div></div>
+    <div class="auth-footer"><button class="auth-btn" onclick="aSaveProfile()">CONTINUA &#8594;</button></div>
+  </div>
+</div>
+<!-- NUMERE MASINI -->
+<div class="auth-screen" id="scr-cars">
+  <div class="auth-inner">
+    <button class="auth-back" onclick="showAuthScreen('scr-profile-setup')">&#8592;</button>
+    <div class="auth-title">Numerele de masina</div>
+    <div class="auth-sub">Adauga pana la 5 numere. Le poti modifica oricand din profil.</div>
+    <div class="plate-list" id="a-plate-list"></div>
+    <div class="add-plate-row" id="a-add-plate-row">
+      <input class="add-plate-input" id="a-plate" type="text" placeholder="CJ-123-ABC" maxlength="10" oninput="this.value=this.value.toUpperCase()">
+      <button class="add-plate-btn" onclick="aAddPlate()">+ ADAUGA</button>
+    </div>
+    <div class="auth-err" id="a-err-plate">Format invalid. Ex: CJ-123-ABC</div>
+    <div class="auth-footer">
+      <button class="auth-btn" onclick="aFinish()">INCEPE SA PARCHEZI &#128663;</button>
+      <div style="text-align:center;margin-top:12px;font-size:12px;color:rgba(255,255,255,.25)">Poti adauga numere si mai tarziu din profil</div>
+    </div>
+  </div>
+</div>
 
 <div id="boot">
   <div class="boot-ring"></div>
@@ -183,11 +311,11 @@ input,button,select,textarea{font-size:16px!important}
   </div>
   <div class="ni" onclick="openLog()">
     <div class="ni-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><path d="M16 2v4M8 2v4M3 10h18" stroke="rgba(255,255,255,.4)" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-    <span class="ni-lb">ISTORIC</span>
+    <span class="ni-lb">LOG</span>
   </div>
   <div class="ni" onclick="openAgent()">
     <div class="ni-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="rgba(255,255,255,.4)" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-    <span class="ni-lb">CONT MEU</span>
+    <span class="ni-lb">AGENT</span>
   </div>
 </div>
 
@@ -196,11 +324,11 @@ input,button,select,textarea{font-size:16px!important}
 
 <!-- SCAN PANEL -->
 <div id="scan-panel" style="display:none;position:fixed;inset:0;z-index:40;background:#000;flex-direction:column;align-items:center;justify-content:center">
-  <div style="position:absolute;top:0;left:0;right:0;padding:max(14px,env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(0,0,0,.8) 0%,transparent 100%);z-index:10">
+  <div style="position:absolute;top:0;left:0;right:0;padding:max(14px,env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(0,0,0,.8) 0%,transparent 100%);z-index:2">
     <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#fff">SCANEAZA COD</div>
-    <button onclick="closeScanner()" style="width:44px;height:44px;background:rgba(255,255,255,.15);border:none;border-radius:10px;color:#fff;font-size:20px;cursor:pointer;position:relative;z-index:10">✕</button>
+    <button onclick="closeScanner()" style="width:32px;height:32px;background:rgba(255,255,255,.1);border:none;border-radius:8px;color:#fff;font-size:16px;cursor:pointer">✕</button>
   </div>
-  <video id="scan-video" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+  <video id="scan-video" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
   <div style="position:relative;z-index:2;width:220px;height:220px">
     <div style="position:absolute;top:0;left:0;width:28px;height:28px;border-top:3px solid #00e64d;border-left:3px solid #00e64d;border-radius:3px 0 0 0"></div>
     <div style="position:absolute;top:0;right:0;width:28px;height:28px;border-top:3px solid #00e64d;border-right:3px solid #00e64d;border-radius:0 3px 0 0"></div>
@@ -229,41 +357,7 @@ input,button,select,textarea{font-size:16px!important}
   </div>
 </div>
 
-<!-- INREGISTRARE: apare automat la prima deschidere -->
-<div id="reg-panel" style="display:none;position:fixed;inset:0;z-index:50;background:#2d3748;flex-direction:column;align-items:center;justify-content:center;padding:24px">
-  <div style="width:100%;max-width:380px">
-    <div style="text-align:center;margin-bottom:28px">
-      <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:6px">Bine ai venit!</div>
-      <div style="font-size:13px;color:rgba(255,255,255,.4)">Completeaza datele tale o singura data</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div>
-        <div style="font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.1em;margin-bottom:5px">NUME COMPLET *</div>
-        <input id="reg-name" type="text" placeholder="Ex: Ion Popescu" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 14px;color:#fff;outline:none">
-      </div>
-      <div>
-        <div style="font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.1em;margin-bottom:5px">TELEFON *</div>
-        <input id="reg-phone" type="tel" placeholder="+40700000000" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 14px;color:#fff;outline:none">
-      </div>
-      <div>
-        <div style="font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.1em;margin-bottom:5px">EMAIL</div>
-        <input id="reg-email" type="email" placeholder="email@exemplu.com" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 14px;color:#fff;outline:none">
-      </div>
-      <div>
-        <div style="font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.1em;margin-bottom:5px">NUMERELE MASINII (pot fi mai multe)</div>
-        <div style="display:flex;gap:8px;margin-bottom:8px">
-          <input id="reg-plate-inp" type="text" placeholder="Ex: CJ-123-ABC" oninput="this.value=this.value.toUpperCase()" style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 14px;color:#fff;outline:none">
-          <button onclick="regAddPlate()" style="padding:13px 16px;background:rgba(0,230,77,.15);border:1px solid rgba(0,230,77,.3);border-radius:10px;color:#00e64d;font-size:13px;font-weight:700;cursor:pointer">+</button>
-        </div>
-        <div id="reg-plates-list" style="display:flex;flex-wrap:wrap;gap:6px;min-height:0"></div>
-      </div>
-      <div id="reg-error" style="display:none;font-size:12px;color:#ff6b6b;padding:8px 12px;background:rgba(255,50,50,.1);border-radius:8px"></div>
-      <button onclick="finishReg()" style="width:100%;margin-top:4px;padding:16px;background:#fff;border:none;border-radius:12px;color:#000;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer">SALVEAZA</button>
-    </div>
-  </div>
-</div>
-
-<!-- CONT MEU -->
+<!-- AGENT PANEL -->
 <div id="agent-panel" style="display:none;position:fixed;inset:0;z-index:40;background:#2d3748;flex-direction:column;overflow-y:auto">
   <div style="padding:max(14px,env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07);position:sticky;top:0;background:#2d3748;z-index:2">
     <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff">CONTUL MEU</div>
@@ -273,46 +367,17 @@ input,button,select,textarea{font-size:16px!important}
     <div style="background:linear-gradient(135deg,rgba(0,200,255,.12),rgba(0,100,200,.08));border:1px solid rgba(0,200,255,.2);border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px">
       <div id="agent-avatar" style="width:54px;height:54px;background:rgba(0,200,255,.2);border:2px solid rgba(0,200,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:#00c8ff;flex-shrink:0">?</div>
       <div style="flex:1;min-width:0">
-        <div id="agent-name-display" style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff">—</div>
-        <div id="agent-sub-display" style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px">—</div>
+        <div id="agent-name-display" style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff">Numele tau</div>
+        <div id="agent-email-display" style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px">email@exemplu.com</div>
         <div style="display:flex;align-items:center;gap:5px;margin-top:6px"><span id="agent-points" style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#facc15">0</span><span style="font-size:10px;color:rgba(255,255,255,.3)">PUNCTE</span></div>
       </div>
       <button onclick="toggleEdit()" style="padding:6px 12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.5);font-size:11px;font-weight:600;cursor:pointer">EDITEAZA</button>
     </div>
     <div id="agent-edit" style="display:none;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px;flex-direction:column;gap:10px">
-      <input id="inp-name" type="text" placeholder="Nume complet" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;color:#fff;outline:none;width:100%">
-      <input id="inp-phone" type="tel" placeholder="Telefon" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;color:#fff;outline:none;width:100%">
+      <input id="inp-name" type="text" placeholder="Numele tau" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;color:#fff;outline:none;width:100%">
       <input id="inp-email" type="email" placeholder="Email" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;color:#fff;outline:none;width:100%">
+      <input id="inp-phone" type="tel" placeholder="Telefon" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;color:#fff;outline:none;width:100%">
       <button onclick="saveProfile()" style="padding:13px;background:#fff;border:none;border-radius:10px;color:#000;font-size:13px;font-weight:700;cursor:pointer">SALVEAZA</button>
-    </div>
-    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
-      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:14px">DATE PERSONALE</div>
-      <div style="display:flex;flex-direction:column">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">
-          <div style="font-size:11px;color:rgba(255,255,255,.35)">NUME</div>
-          <div id="disp-name" style="font-size:13px;font-weight:600;color:#fff">—</div>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">
-          <div style="font-size:11px;color:rgba(255,255,255,.35)">TELEFON</div>
-          <div id="disp-phone" style="font-size:13px;font-weight:600;color:#fff">—</div>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">
-          <div style="font-size:11px;color:rgba(255,255,255,.35)">EMAIL</div>
-          <div id="disp-email" style="font-size:13px;font-weight:600;color:#fff">—</div>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
-          <div style="font-size:11px;color:rgba(255,255,255,.35)">INREGISTRAT</div>
-          <div id="disp-date" style="font-size:12px;color:rgba(255,255,255,.45)">—</div>
-        </div>
-      </div>
-    </div>
-    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
-      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:12px">NUMERELE MASINII MELE</div>
-      <div id="disp-plates" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
-      <div style="display:flex;gap:8px">
-        <input id="add-plate-inp" type="text" placeholder="Adauga numar nou" oninput="this.value=this.value.toUpperCase()" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;color:#fff;font-size:12px;outline:none">
-        <button onclick="addPlate()" style="padding:10px 16px;background:rgba(0,230,77,.15);border:1px solid rgba(0,230,77,.3);border-radius:8px;color:#00e64d;font-size:13px;font-weight:700;cursor:pointer">+</button>
-      </div>
     </div>
     <div style="background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.15);border-radius:14px;padding:16px">
       <div style="font-size:10px;color:rgba(255,215,0,.5);letter-spacing:.1em;margin-bottom:10px">PUNCTE DE LOIALITATE</div>
@@ -323,23 +388,53 @@ input,button,select,textarea{font-size:16px!important}
       <div style="background:rgba(255,215,0,.08);border-radius:8px;padding:10px 12px;font-size:11px;color:rgba(255,255,255,.4)">Castigi <b style="color:#facc15">5 puncte</b> per rezervare. La <b style="color:#facc15">100 pct</b> = 1 ora gratuita!</div>
     </div>
     <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:12px">MASINA MEA</div>
+      <div style="display:flex;gap:8px">
+        <input id="inp-car" type="text" placeholder="Ex: Dacia Logan" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 11px;color:#fff;font-size:12px;outline:none">
+        <input id="inp-plate" type="text" placeholder="CJ-123-ABC" style="width:110px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 11px;color:#fff;font-size:12px;outline:none;text-transform:uppercase">
+        <button onclick="saveCar()" style="padding:9px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer">OK</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+        <div style="font-size:13px;color:rgba(255,255,255,.5)" id="car-display">-</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.3)" id="plate-display"></div>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:12px">ABONAMENT</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;text-align:center;cursor:pointer" onclick="selectPlan('lunar')">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#fff">49 lei</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px">/ LUNAR</div>
+          <div style="font-size:9px;color:#00e64d;margin-top:5px">NELIMITAT</div>
+        </div>
+        <div style="background:rgba(0,200,255,.08);border:1px solid rgba(0,200,255,.25);border-radius:10px;padding:12px;text-align:center;cursor:pointer" onclick="selectPlan('anual')">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#00c8ff">399 lei</div>
+          <div style="font-size:10px;color:rgba(0,200,255,.5);margin-top:2px">/ ANUAL</div>
+          <div style="font-size:9px;color:#facc15;margin-top:5px">-32% REDUCERE</div>
+        </div>
+      </div>
+      <div id="plan-msg" style="display:none;margin-top:10px;text-align:center;font-size:12px;color:#00e64d"></div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:12px">NOTIFICARI</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:13px;color:rgba(255,255,255,.7)">Loc s-a eliberat</div><div onclick="toggleNotif(this)" data-on="1" style="width:40px;height:22px;background:#00e64d;border-radius:11px;position:relative;cursor:pointer"><div style="position:absolute;top:3px;right:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:all .2s"></div></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:13px;color:rgba(255,255,255,.7)">Rezervare expira</div><div onclick="toggleNotif(this)" data-on="1" style="width:40px;height:22px;background:#00e64d;border-radius:11px;position:relative;cursor:pointer"><div style="position:absolute;top:3px;right:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:all .2s"></div></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:13px;color:rgba(255,255,255,.7)">Oferte speciale</div><div onclick="toggleNotif(this)" data-on="0" style="width:40px;height:22px;background:rgba(255,255,255,.15);border-radius:11px;position:relative;cursor:pointer"><div style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:all .2s"></div></div></div>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px">
       <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:12px">SUPORT</div>
       <a href="tel:+40700000000" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);text-decoration:none"><div style="font-size:13px;color:rgba(255,255,255,.7)">Suna-ne</div><div style="font-size:12px;color:rgba(0,200,255,.7)">+40 700 000 000</div></a>
       <a href="mailto:support@tireapark.ro" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;text-decoration:none"><div style="font-size:13px;color:rgba(255,255,255,.7)">Email suport</div><div style="font-size:12px;color:rgba(0,200,255,.7)">support@tireapark.ro</div></a>
     </div>
     <div style="background:rgba(0,230,77,.06);border:1px solid rgba(0,230,77,.15);border-radius:14px;padding:16px">
       <div style="font-size:10px;color:rgba(0,230,77,.5);letter-spacing:.1em;margin-bottom:8px">INVITA PRIETENI</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px">Invita un prieten si ambii primiti <b style="color:#00e64d">50 puncte</b> gratuit!</div>
-      <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:10px">Invita un prieten si ambii primiti <b style="color:#00e64d">50 puncte</b> gratuit!</div>
+      <div style="display:flex;gap:8px">
         <div id="referral-code" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#00e64d;letter-spacing:.08em">TIREA-????</div>
         <button onclick="copyReferral()" style="padding:10px 14px;background:rgba(0,230,77,.15);border:1px solid rgba(0,230,77,.25);border-radius:8px;color:#00e64d;font-size:12px;font-weight:600;cursor:pointer">COPIAZA</button>
       </div>
-      <div style="display:flex;gap:8px">
-        <input id="inp-invite-phone" type="tel" placeholder="+40700000000" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 11px;color:#fff;font-size:12px;outline:none">
-        <button onclick="sendInviteWA()" style="padding:9px 12px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.3);border-radius:8px;color:#25D366;font-size:11px;font-weight:700;cursor:pointer">WA</button>
-        <button onclick="sendInviteSMS()" style="padding:9px 12px;background:rgba(0,200,255,.1);border:1px solid rgba(0,200,255,.25);border-radius:8px;color:#00c8ff;font-size:11px;font-weight:700;cursor:pointer">SMS</button>
-      </div>
-      <div id="invite-msg" style="display:none;font-size:11px;color:#00e64d;margin-top:8px;padding:8px 10px;background:rgba(0,230,77,.08);border-radius:8px"></div>
     </div>
     <div style="padding:8px 0;text-align:center"><div style="font-size:10px;color:rgba(255,255,255,.12)">TIREAPARK v1.0 · CLUJ-NAPOCA 2026</div></div>
   </div>
@@ -359,7 +454,7 @@ const biv=setInterval(()=>{
     setTimeout(()=>{
       const b=document.getElementById('boot');
       b.style.transition='opacity .8s'; b.style.opacity='0';
-      setTimeout(()=>{b.style.display='none';if(!localStorage.getItem('tp_profile')){document.getElementById('reg-panel').style.display='flex';}},800);
+      setTimeout(()=>{b.style.display='none'; authBoot();},800);
     },600);
   }
 },330);
@@ -557,119 +652,69 @@ function doNavigate(){
   }
 }
 
-// ── CONT MEU ──────────────────────────────────────────
+// ── AGENT ─────────────────────────────────────────────
 function getProfile(){try{return JSON.parse(localStorage.getItem('tp_profile')||'{}');}catch(e){return{};}}
-function getPlates(){try{return JSON.parse(localStorage.getItem('tp_plates')||'[]');}catch(e){return[];}}
-function savePlates(arr){localStorage.setItem('tp_plates',JSON.stringify(arr));}
-
-// Inregistrare - adauga numar masina
-var regPlates=[];
-window.regAddPlate=function(){
-  var inp=document.getElementById('reg-plate-inp');
-  var val=inp.value.trim().toUpperCase();
-  if(!val||regPlates.indexOf(val)>=0)return;
-  regPlates.push(val); inp.value=''; renderRegPlates();
-};
-window.regRemovePlate=function(i){regPlates.splice(i,1);renderRegPlates();};
-function renderRegPlates(){
-  var el=document.getElementById('reg-plates-list'); if(!el)return;
-  el.innerHTML=regPlates.map(function(pl,i){
-    return '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,230,77,.1);border:1px solid rgba(0,230,77,.25);border-radius:8px;padding:5px 10px"><span style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#00e64d">'+pl+'</span><span onclick="regRemovePlate('+i+')" style="color:rgba(0,230,77,.5);cursor:pointer;font-size:16px;line-height:1">x</span></div>';
-  }).join('');
-}
-
-// Salveaza datele si inchide formularul → harta
-window.finishReg=function(){
-  var name=document.getElementById('reg-name').value.trim();
-  var phone=document.getElementById('reg-phone').value.trim();
-  var email=document.getElementById('reg-email').value.trim();
-  var errEl=document.getElementById('reg-error');
-  if(!name){errEl.style.display='block';errEl.textContent='Introdu numele tau.';return;}
-  if(!phone){errEl.style.display='block';errEl.textContent='Introdu numarul de telefon.';return;}
-  errEl.style.display='none';
-  localStorage.setItem('tp_profile',JSON.stringify({name:name,phone:phone,email:email,registeredAt:Date.now()}));
-  savePlates(regPlates);
-  localStorage.setItem('tp_ref','TIREA-'+Math.random().toString(36).substr(2,5).toUpperCase());
-  document.getElementById('reg-panel').style.display='none';
-};
-
-// Deschide CONT MEU - arata datele salvate direct
 function openAgent(){
-  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('act');});
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
   document.querySelectorAll('.ni')[3].classList.add('act');
-  var p=getProfile();
-  var name=p.name||'—';
-  document.getElementById('agent-avatar').textContent=name.charAt(0).toUpperCase()||'?';
-  document.getElementById('agent-name-display').textContent=name;
-  document.getElementById('agent-sub-display').textContent=p.phone||p.email||'—';
-  document.getElementById('disp-name').textContent=p.name||'—';
-  document.getElementById('disp-phone').textContent=p.phone||'—';
-  document.getElementById('disp-email').textContent=p.email||'—';
-  document.getElementById('disp-date').textContent=p.registeredAt?new Date(p.registeredAt).toLocaleDateString('ro-RO',{day:'2-digit',month:'long',year:'numeric'}):'—';
-  document.getElementById('inp-name').value=p.name||'';
-  document.getElementById('inp-phone').value=p.phone||'';
-  document.getElementById('inp-email').value=p.email||'';
-  renderPlatesDisplay();
-  var pts=parseInt(localStorage.getItem('tp_points')||'0');
+  const p=getProfile();
+  if(p.name){document.getElementById('agent-name-display').textContent=p.name;document.getElementById('agent-avatar').textContent=p.name[0].toUpperCase();}
+  if(p.email)document.getElementById('agent-email-display').textContent=p.email;
+  if(p.car)document.getElementById('car-display').textContent=p.car;
+  if(p.plate)document.getElementById('plate-display').textContent=p.plate;
+  if(p.name)document.getElementById('inp-name').value=p.name;
+  if(p.email)document.getElementById('inp-email').value=p.email;
+  if(p.phone)document.getElementById('inp-phone').value=p.phone;
+  if(p.car)document.getElementById('inp-car').value=p.car;
+  if(p.plate)document.getElementById('inp-plate').value=p.plate;
+  const pts=parseInt(localStorage.getItem('tp_points')||'0');
   document.getElementById('agent-points').textContent=pts;
   document.getElementById('points-display').textContent=pts;
   document.getElementById('points-value').textContent='= '+Math.floor(pts/10)+' lei';
-  document.getElementById('referral-code').textContent=localStorage.getItem('tp_ref')||'TIREA-????';
+  const code=localStorage.getItem('tp_ref')||(()=>{const c='TIREA-'+Math.random().toString(36).substr(2,5).toUpperCase();localStorage.setItem('tp_ref',c);return c;})();
+  document.getElementById('referral-code').textContent=code;
   document.getElementById('agent-panel').style.display='flex';
 }
-function renderPlatesDisplay(){
-  var plates=getPlates();
-  var el=document.getElementById('disp-plates'); if(!el)return;
-  if(!plates.length){el.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.25);padding:4px 0">Niciun numar inregistrat</div>';return;}
-  el.innerHTML=plates.map(function(pl,i){
-    return '<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 14px"><span style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:.08em">'+pl+'</span><button onclick="deletePlate('+i+')" style="background:rgba(255,50,70,.1);border:1px solid rgba(255,50,70,.2);border-radius:6px;color:rgba(255,80,100,.7);font-size:11px;padding:4px 10px;cursor:pointer">STERGE</button></div>';
-  }).join('');
-}
-window.addPlate=function(){
-  var inp=document.getElementById('add-plate-inp');
-  var val=inp.value.trim().toUpperCase(); if(!val)return;
-  var plates=getPlates();
-  if(plates.indexOf(val)<0)plates.push(val);
-  savePlates(plates); inp.value=''; renderPlatesDisplay();
-};
-window.deletePlate=function(i){var p=getPlates();p.splice(i,1);savePlates(p);renderPlatesDisplay();};
 function closeAgent(){
   document.getElementById('agent-panel').style.display='none';
-  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('act');});
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
   document.querySelectorAll('.ni')[0].classList.add('act');
 }
-function toggleEdit(){var ed=document.getElementById('agent-edit');ed.style.display=ed.style.display==='flex'?'none':'flex';}
+function toggleEdit(){const ed=document.getElementById('agent-edit');ed.style.display=ed.style.display==='flex'?'none':'flex';}
 function saveProfile(){
-  var p=getProfile();
-  var name=document.getElementById('inp-name').value.trim();
-  var phone=document.getElementById('inp-phone').value.trim();
-  var email=document.getElementById('inp-email').value.trim();
-  if(name)p.name=name; if(phone)p.phone=phone; if(email)p.email=email;
+  const p=getProfile();
+  p.name=document.getElementById('inp-name').value.trim();
+  p.email=document.getElementById('inp-email').value.trim();
+  p.phone=document.getElementById('inp-phone').value.trim();
   localStorage.setItem('tp_profile',JSON.stringify(p));
+  if(p.name){document.getElementById('agent-name-display').textContent=p.name;document.getElementById('agent-avatar').textContent=p.name[0].toUpperCase();}
+  if(p.email)document.getElementById('agent-email-display').textContent=p.email;
   document.getElementById('agent-edit').style.display='none';
-  openAgent();
+}
+function saveCar(){
+  const p=getProfile();
+  p.car=document.getElementById('inp-car').value.trim();
+  p.plate=document.getElementById('inp-plate').value.trim().toUpperCase();
+  localStorage.setItem('tp_profile',JSON.stringify(p));
+  if(p.car)document.getElementById('car-display').textContent=p.car;
+  if(p.plate)document.getElementById('plate-display').textContent=p.plate;
+}
+function selectPlan(type){
+  const msg=document.getElementById('plan-msg');
+  msg.style.display='block';
+  msg.textContent=type==='lunar'?'Abonament lunar activat - 49 lei/luna':'Abonament anual activat - 399 lei/an';
+  localStorage.setItem('tp_plan',type);
+}
+function toggleNotif(el){
+  const on=el.dataset.on==='1';
+  el.dataset.on=on?'0':'1';
+  el.style.background=on?'rgba(255,255,255,.15)':'#00e64d';
+  const dot=el.querySelector('div');
+  dot.style.left=on?'3px':''; dot.style.right=on?'':'3px';
 }
 function copyReferral(){
-  var code=document.getElementById('referral-code').textContent;
-  var btn=event.target;
-  if(navigator.clipboard){navigator.clipboard.writeText(code).then(function(){var o=btn.textContent;btn.textContent='COPIAT!';setTimeout(function(){btn.textContent=o;},2000);}).catch(function(){alert('Cod: '+code);});}else{alert('Cod: '+code);}
-}
-function sendInviteWA(){
-  var phone=document.getElementById('inp-invite-phone').value.trim().replace(/ /g,'');
-  var code=document.getElementById('referral-code').textContent;
-  var msg=encodeURIComponent('Salut! Te invit pe TireaPark! Cod: '+code+' - ambii primim 50 puncte! tireapark.ro');
-  window.open(phone?'https://wa.me/'+phone.replace('+','')+'?text='+msg:'https://wa.me/?text='+msg,'_blank');
-  addPoints(50);
-  var m=document.getElementById('invite-msg');
-  if(m){m.style.display='block';m.textContent='Invitatie trimisa! +50 puncte adaugate.';setTimeout(function(){m.style.display='none';},3500);}
-}
-function sendInviteSMS(){
-  var phone=document.getElementById('inp-invite-phone').value.trim();
-  var code=document.getElementById('referral-code').textContent;
-  window.location.href='sms:'+(phone||'')+'?body='+encodeURIComponent('TireaPark cod: '+code+' - ambii 50 pct bonus! tireapark.ro');
-  addPoints(50);
-  var m=document.getElementById('invite-msg');
-  if(m){m.style.display='block';m.textContent='Invitatie trimisa! +50 puncte adaugate.';setTimeout(function(){m.style.display='none';},3500);}
+  const code=document.getElementById('referral-code').textContent;
+  navigator.clipboard?.writeText(code).then(()=>alert('Cod copiat: '+code)).catch(()=>alert('Cod: '+code));
 }
 
 // ── LOG ───────────────────────────────────────────────
@@ -997,5 +1042,276 @@ document.getElementById('pay-overlay').addEventListener('click',function(e){
 <style>
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 </style>
+
+<script>
+// ── AUTH STATE ────────────────────────────────────────
+var aUserData = null;
+var aPendingPhone = '';
+var aConfirmResult = null;
+var aRecaptchaVerifier = null;
+var aOtpTimerIv = null;
+var aObSlide = 0;
+var aFirebaseAuth = null;
+var aFirebaseDB = null;
+
+function showAuthScreen(id){
+  document.querySelectorAll('.auth-screen').forEach(function(s){s.classList.remove('show');});
+  var el = document.getElementById(id);
+  if(el) el.classList.add('show');
+}
+
+function aHideAuth(){
+  document.querySelectorAll('.auth-screen').forEach(function(s){s.classList.remove('show');});
+}
+
+// Called by boot after animation
+function authBoot(){
+  // Load Firebase auth async
+  Promise.all([
+    import('https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js'),
+    import('https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js'),
+    import('https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js')
+  ]).then(function(mods){
+    var initializeApp = mods[0].initializeApp;
+    var getAuth = mods[1].getAuth, RecaptchaVerifier = mods[1].RecaptchaVerifier, signInWithPhoneNumber = mods[1].signInWithPhoneNumber, onAuthStateChanged = mods[1].onAuthStateChanged;
+    var getDatabase = mods[2].getDatabase, ref = mods[2].ref, get = mods[2].get, set = mods[2].set;
+
+    var fbCfg = {apiKey:'AIzaSyDF63PQ9s2AG9_8ho9u6v-myzDrs_SrtbY',authDomain:'tireapark.firebaseapp.com',databaseURL:'https://tireapark-default-rtdb.firebaseio.com',projectId:'tireapark',storageBucket:'tireapark.firebasestorage.app',messagingSenderId:'503087510644',appId:'1:503087510644:web:18d5e122c67afe110e8d21'};
+    
+    // Use existing app if already initialized
+    var fbApp;
+    try { fbApp = initializeApp(fbCfg, 'auth'); } catch(e) { fbApp = initializeApp(fbCfg); }
+    
+    aFirebaseAuth = getAuth(fbApp);
+    aFirebaseDB = getDatabase(fbApp);
+
+    // Store refs for OTP
+    window._aRecaptchaVerifier = RecaptchaVerifier;
+    window._aSignInWithPhone = signInWithPhoneNumber;
+    window._aRef = ref;
+    window._aGet = get;
+    window._aSet = set;
+
+    onAuthStateChanged(aFirebaseAuth, function(user){
+      if(user){
+        // Already logged in — load data and go to map
+        get(ref(aFirebaseDB, 'users/'+user.uid)).then(function(snap){
+          if(snap.exists()) aUserData = snap.val();
+          else {
+            var saved = localStorage.getItem('tp_ud_'+user.phoneNumber);
+            if(saved) aUserData = JSON.parse(saved);
+          }
+          aHideAuth();
+        }).catch(function(){ aHideAuth(); });
+      } else {
+        // Check localStorage for demo mode
+        var phone = localStorage.getItem('tp_last_phone');
+        if(phone){
+          var saved = localStorage.getItem('tp_ud_'+phone);
+          if(saved){ aUserData = JSON.parse(saved); aHideAuth(); return; }
+        }
+        // Not logged in — show auth
+        showAuthScreen(localStorage.getItem('tp_onboard_seen') ? 'scr-phone' : 'scr-onboard');
+      }
+    });
+  }).catch(function(e){
+    console.error('Auth Firebase load error:', e);
+    // Fallback: check localStorage
+    var phone = localStorage.getItem('tp_last_phone');
+    if(phone){
+      var saved = localStorage.getItem('tp_ud_'+phone);
+      if(saved){ aUserData = JSON.parse(saved); aHideAuth(); return; }
+    }
+    showAuthScreen(localStorage.getItem('tp_onboard_seen') ? 'scr-phone' : 'scr-onboard');
+  });
+}
+
+function obNext(){
+  if(aObSlide < 2){
+    aObSlide++;
+    document.getElementById('ob-slides').style.transform = 'translateX(-'+aObSlide*33.333+'%)';
+    for(var i=0;i<3;i++) document.getElementById('dot-'+i).className = 'ob-dot'+(i===aObSlide?' act':'');
+    if(aObSlide===2) document.getElementById('ob-next-btn').textContent = 'CREEAZA CONT GRATUIT';
+  } else {
+    localStorage.setItem('tp_onboard_seen','1');
+    showAuthScreen('scr-phone');
+  }
+}
+
+function aSendOTP(){
+  var phone = document.getElementById('a-phone').value.replace(/[^0-9]/g,'');
+  var errEl = document.getElementById('a-err-phone');
+  if(phone.length < 9){ errEl.style.display='block'; return; }
+  errEl.style.display = 'none';
+  aPendingPhone = '+40'+phone;
+  localStorage.setItem('tp_last_phone', aPendingPhone);
+  document.getElementById('a-otp-sub').textContent = 'Am trimis un cod de 6 cifre la '+aPendingPhone;
+  var btn = document.getElementById('a-send-btn');
+  btn.textContent = 'SE TRIMITE...'; btn.disabled = true;
+
+  if(!aFirebaseAuth || !window._aSignInWithPhone){
+    // Demo mode
+    aConfirmResult = {demo: true};
+    btn.textContent = 'TRIMITE COD SMS'; btn.disabled = false;
+    showAuthScreen('scr-otp');
+    aStartOtpTimer();
+    return;
+  }
+
+  try {
+    if(!aRecaptchaVerifier) aRecaptchaVerifier = new window._aRecaptchaVerifier(aFirebaseAuth, 'a-send-btn', {size:'invisible'});
+    window._aSignInWithPhone(aFirebaseAuth, aPendingPhone, aRecaptchaVerifier).then(function(result){
+      aConfirmResult = result;
+      btn.textContent = 'TRIMITE COD SMS'; btn.disabled = false;
+      showAuthScreen('scr-otp');
+      aStartOtpTimer();
+    }).catch(function(e){
+      console.log('SMS error, demo mode:', e);
+      aConfirmResult = {demo: true};
+      btn.textContent = 'TRIMITE COD SMS'; btn.disabled = false;
+      showAuthScreen('scr-otp');
+      aStartOtpTimer();
+    });
+  } catch(e) {
+    aConfirmResult = {demo: true};
+    btn.textContent = 'TRIMITE COD SMS'; btn.disabled = false;
+    showAuthScreen('scr-otp');
+    aStartOtpTimer();
+  }
+}
+
+function aStartOtpTimer(){
+  var t = 60;
+  var el = document.getElementById('a-countdown');
+  var row = document.getElementById('a-timer-row');
+  var resend = document.getElementById('a-resend-btn');
+  if(aOtpTimerIv) clearInterval(aOtpTimerIv);
+  row.style.display = 'block'; resend.style.display = 'none';
+  aOtpTimerIv = setInterval(function(){
+    t--; el.textContent = t;
+    if(t<=0){ clearInterval(aOtpTimerIv); row.style.display='none'; resend.style.display='block'; }
+  }, 1000);
+}
+
+function aOtpInput(el, idx){
+  el.value = el.value.replace(/[^0-9]/g,'').slice(-1);
+  if(el.value && idx < 5) document.getElementById('otp'+(idx+1)).focus();
+  var code = '';
+  for(var i=0;i<6;i++) code += (document.getElementById('otp'+i).value||'');
+  if(code.length === 6) aVerifyOTP();
+}
+
+function aVerifyOTP(){
+  var code = '';
+  for(var i=0;i<6;i++) code += (document.getElementById('otp'+i).value||'');
+  if(code.length < 6) return;
+  var btn = document.getElementById('a-verify-btn');
+  btn.textContent = 'SE VERIFICA...'; btn.disabled = true;
+  var errEl = document.getElementById('a-err-otp');
+
+  function onSuccess(){
+    var saved = localStorage.getItem('tp_ud_'+aPendingPhone);
+    if(saved){ aUserData = JSON.parse(saved); aHideAuth(); btn.textContent='VERIFICA CODUL'; btn.disabled=false; return; }
+    btn.textContent = 'VERIFICA CODUL'; btn.disabled = false;
+    showAuthScreen('scr-profile-setup');
+  }
+
+  function onFail(){
+    errEl.style.display = 'block';
+    for(var i=0;i<6;i++){ var b=document.getElementById('otp'+i); b.className='otp-box err'; b.value=''; }
+    setTimeout(function(){ for(var i=0;i<6;i++) document.getElementById('otp'+i).className='otp-box'; errEl.style.display='none'; document.getElementById('otp0').focus(); }, 1200);
+    btn.textContent = 'VERIFICA CODUL'; btn.disabled = false;
+  }
+
+  if(aConfirmResult && aConfirmResult.demo){
+    // Demo: any 6-digit code works
+    onSuccess();
+  } else if(aConfirmResult) {
+    aConfirmResult.confirm(code).then(function(result){
+      if(window._aGet && window._aRef && aFirebaseDB){
+        window._aGet(window._aRef(aFirebaseDB,'users/'+result.user.uid)).then(function(snap){
+          if(snap.exists()){ aUserData = snap.val(); aHideAuth(); }
+          else showAuthScreen('scr-profile-setup');
+          btn.textContent='VERIFICA CODUL'; btn.disabled=false;
+        }).catch(function(){ showAuthScreen('scr-profile-setup'); btn.textContent='VERIFICA CODUL'; btn.disabled=false; });
+      } else { showAuthScreen('scr-profile-setup'); btn.textContent='VERIFICA CODUL'; btn.disabled=false; }
+    }).catch(onFail);
+  } else { onFail(); }
+}
+
+function aSaveProfile(){
+  var name = document.getElementById('a-name').value.trim();
+  var email = document.getElementById('a-email').value.trim();
+  var pass = document.getElementById('a-pass').value;
+  var ok = true;
+  if(!name){document.getElementById('a-err-name').style.display='block';ok=false;}else document.getElementById('a-err-name').style.display='none';
+  if(!email||!email.includes('@')){document.getElementById('a-err-email').style.display='block';ok=false;}else document.getElementById('a-err-email').style.display='none';
+  if(pass.length<6){document.getElementById('a-err-pass').style.display='block';ok=false;}else document.getElementById('a-err-pass').style.display='none';
+  if(!ok) return;
+  aUserData = {name:name, email:email, phone:aPendingPhone, plates:[], points:0, createdAt:Date.now()};
+  aSaveData();
+  aRenderPlates([]);
+  showAuthScreen('scr-cars');
+}
+
+function aSaveData(){
+  if(!aUserData) return;
+  localStorage.setItem('tp_ud_'+(aUserData.phone||'anon'), JSON.stringify(aUserData));
+}
+
+function aRenderPlates(plates){
+  var el = document.getElementById('a-plate-list');
+  el.innerHTML = plates.map(function(p,i){ return '<div class="plate-item"><div class="plate-num">&#128663; '+p+'</div><button class="plate-del" onclick="aRemovePlate('+i+')">&#10005;</button></div>'; }).join('');
+  var row = document.getElementById('a-add-plate-row');
+  if(row) row.style.display = plates.length >= 5 ? 'none' : 'flex';
+}
+
+function aAddPlate(){
+  var val = document.getElementById('a-plate').value.trim().toUpperCase();
+  var errEl = document.getElementById('a-err-plate');
+  if(!val || val.length < 4){ errEl.style.display='block'; return; }
+  errEl.style.display = 'none';
+  if(!aUserData) aUserData = {plates:[]};
+  if(!aUserData.plates) aUserData.plates = [];
+  if(aUserData.plates.length >= 5) return;
+  aUserData.plates.push(val);
+  aSaveData(); aRenderPlates(aUserData.plates);
+  document.getElementById('a-plate').value = '';
+}
+
+function aRemovePlate(i){
+  if(!aUserData || !aUserData.plates) return;
+  aUserData.plates.splice(i,1);
+  aSaveData(); aRenderPlates(aUserData.plates);
+}
+
+function aFinish(){
+  aSaveData();
+  // Patch profile fields in original agent panel
+  if(aUserData){
+    if(aUserData.name){ 
+      var av = document.getElementById('agent-avatar');
+      if(av) av.textContent = aUserData.name[0].toUpperCase();
+      var nd = document.getElementById('agent-name-display');
+      if(nd) nd.textContent = aUserData.name;
+    }
+    if(aUserData.email){
+      var ed = document.getElementById('agent-email-display');
+      if(ed) ed.textContent = aUserData.email;
+    }
+    if(aUserData.plates && aUserData.plates.length){
+      var cd = document.getElementById('car-display');
+      if(cd) cd.textContent = aUserData.plates[0];
+      var pd = document.getElementById('plate-display');
+      if(pd) pd.textContent = aUserData.plates[0];
+      // Fill inp-plate in agent panel
+      var ip = document.getElementById('inp-plate');
+      if(ip) ip.value = aUserData.plates[0];
+    }
+  }
+  aHideAuth();
+}
+</script>
+
 </body>
 </html>
