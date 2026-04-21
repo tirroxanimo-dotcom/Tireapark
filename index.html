@@ -10,6 +10,9 @@
 <link href="https://cdn.jsdelivr.net/npm/mapbox-gl@3.3.0/dist/mapbox-gl.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/mapbox-gl@3.3.0/dist/mapbox-gl.js"></script>
+<!-- Firebase SDKs ca scripturi normale (compatibil iOS Safari) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#2d3748;font-family:'Inter',sans-serif;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
@@ -20,7 +23,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2d3748;font-family:
 .boot-title{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:.08em;margin-bottom:3px}
 .boot-sub{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.15em;margin-bottom:20px}
 .boot-bar{width:160px;height:2px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-bottom:6px}
-.boot-fill{height:100%;width:0;background:#fff;border-radius:2px}
+.boot-fill{height:100%;width:0;background:#fff;border-radius:2px;transition:width .3s}
 .boot-pct{font-size:9px;color:rgba(255,255,255,.3)}
 .boot-log{font-size:9px;color:rgba(255,255,255,.15);margin-top:4px;height:12px}
 #hdr{position:fixed;top:0;left:0;right:0;z-index:20;padding:max(12px,env(safe-area-inset-top)) 14px 10px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(0,0,0,.7) 0%,transparent 100%);pointer-events:none}
@@ -33,19 +36,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2d3748;font-family:
 .hdr-date{font-size:8px;color:rgba(255,255,255,.3);text-align:right;margin-top:1px}
 #topbar{position:fixed;top:58px;left:14px;right:14px;z-index:20;display:flex;align-items:center;gap:5px;overflow-x:auto;scrollbar-width:none;pointer-events:auto}
 #topbar::-webkit-scrollbar{display:none}
-.stat{background:rgba(35,44,58,.7);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:5px 9px;display:flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0}
+.stat{background:rgba(35,44,58,.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:5px 9px;display:flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0}
 .stat-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 .stat-txt{font-size:10px;color:rgba(255,255,255,.6);font-weight:500}
 .stat-txt b{color:#fff;font-weight:700}
-#search-wrap{background:rgba(35,44,58,.7);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:5px 10px;display:flex;align-items:center;gap:6px;width:120px;flex-shrink:0}
+#search-wrap{background:rgba(35,44,58,.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:5px 10px;display:flex;align-items:center;gap:6px;width:120px;flex-shrink:0}
 #search-input{background:transparent;border:none;outline:none;color:#fff;font-size:11px;font-family:'Inter',sans-serif;width:100%;min-width:0}
 #search-input::placeholder{color:rgba(255,255,255,.3)}
 #search-ico{opacity:.35;flex-shrink:0}
-#search-results{position:fixed;top:96px;left:14px;right:14px;z-index:21;background:rgba(40,50,65,.95);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.12);border-radius:12px;overflow:hidden;display:none}
+#search-results{position:fixed;top:96px;left:14px;right:14px;z-index:21;background:rgba(40,50,65,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.12);border-radius:12px;overflow:hidden;display:none}
 .sr-item{padding:12px 14px;font-size:13px;color:rgba(255,255,255,.7);cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06);min-height:44px;display:flex;align-items:center}
 .sr-item:last-child{border-bottom:none}
 .sr-item:active{background:rgba(255,255,255,.1)}
-#views{position:fixed;bottom:calc(72px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:4px;background:rgba(35,44,58,.75);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:5px;white-space:nowrap}
+#views{position:fixed;bottom:calc(72px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:4px;background:rgba(35,44,58,.75);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:5px;white-space:nowrap}
 .vbtn{padding:8px 12px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.03em;transition:all .2s;display:flex;align-items:center;gap:4px;min-height:36px}
 .vbtn:active{opacity:.7}
 .vbtn.active{background:#fff;color:#000}
@@ -60,8 +63,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2d3748;font-family:
 .mk-pulse{position:absolute;inset:0;border-radius:50%;animation:pulse 2.5s ease-out infinite;pointer-events:none}
 @keyframes pulse{0%{transform:scale(.5);opacity:.35}100%{transform:scale(2.2);opacity:0}}
 .mk:active .mk-blocker{transform:scale(1.15)}
-#pover{display:none;position:fixed;inset:0;z-index:28;background:rgba(35,44,58,.4);backdrop-filter:blur(3px)}
-#panel{position:fixed;bottom:-100%;left:0;right:0;z-index:30;background:rgba(40,50,65,.98);border-top:1px solid rgba(255,255,255,.1);border-radius:20px 20px 0 0;padding:0 18px calc(24px + env(safe-area-inset-bottom));transition:bottom .4s cubic-bezier(.16,1,.3,1);backdrop-filter:blur(20px)}
+#pover{display:none;position:fixed;inset:0;z-index:28;background:rgba(35,44,58,.4);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+#panel{position:fixed;bottom:-100%;left:0;right:0;z-index:30;background:rgba(40,50,65,.98);border-top:1px solid rgba(255,255,255,.1);border-radius:20px 20px 0 0;padding:0 18px calc(24px + env(safe-area-inset-bottom));transition:bottom .4s cubic-bezier(.16,1,.3,1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
 #panel.open{bottom:0}
 .p-handle{width:32px;height:3px;background:rgba(255,255,255,.15);border-radius:3px;margin:10px auto 16px}
 .p-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
@@ -80,7 +83,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2d3748;font-family:
 .p-btn.occ{background:rgba(255,60,80,.12);color:rgba(255,80,100,.8);border:1px solid rgba(255,60,80,.2)}
 .p-btn.nav{background:rgba(66,133,244,.15);color:#4285f4;border:1px solid rgba(66,133,244,.3);display:flex;align-items:center;justify-content:center;gap:6px}
 .p-btn.nav:active{background:rgba(66,133,244,.25)}
-#bnav{position:fixed;bottom:0;left:0;right:0;z-index:25;background:rgba(40,50,65,.95);border-top:1px solid rgba(255,255,255,.07);display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(20px)}
+#bnav{position:fixed;bottom:0;left:0;right:0;z-index:25;background:rgba(40,50,65,.95);border-top:1px solid rgba(255,255,255,.07);display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
 .ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;min-height:44px;justify-content:center}
 .ni-ic{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:7px;transition:all .15s}
 .ni.act .ni-ic{background:rgba(255,255,255,.1)}
@@ -88,7 +91,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2d3748;font-family:
 .ni.act .ni-lb{color:rgba(255,255,255,.8)}
 #toast{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));left:14px;right:14px;z-index:999;opacity:0;pointer-events:none;transform:translateY(10px);transition:all .35s cubic-bezier(.34,1.56,.64,1)}
 #toast.show{opacity:1;transform:translateY(0)}
-.t-box{background:rgba(40,50,65,.95);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.t-box{background:rgba(40,50,65,.95);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,.5)}
 .t-ic{width:28px;height:28px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
 .t-title{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#fff}
 .t-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:1px}
@@ -103,137 +106,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#2d3748;font-family:
 input,button,select,textarea{font-size:16px!important}
 *{touch-action:manipulation}
 #map canvas{touch-action:none}
-
-/* AUTH SCREENS */
-.auth-screen{position:fixed;inset:0;z-index:9998;background:#2d3748;display:none;flex-direction:column;overflow-y:auto}
-.auth-screen.show{display:flex}
-.auth-inner{flex:1;display:flex;flex-direction:column;padding:max(20px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom))}
-.auth-back{width:40px;height:40px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:28px;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;flex-shrink:0}
-.auth-title{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#fff;margin-bottom:6px}
-.auth-sub{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:28px;line-height:1.55}
-.auth-label{font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:6px;display:block;font-weight:600}
-.auth-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 15px;color:#fff;outline:none;transition:border-color .2s}
-.auth-input:focus{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.08)}
-.auth-input::placeholder{color:rgba(255,255,255,.22)}
-.auth-err{font-size:11px;color:rgba(255,80,100,.8);margin-top:5px;display:none}
-.auth-group{margin-bottom:14px}
-.auth-btn{width:100%;padding:17px;background:#fff;border:none;border-radius:12px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#000;cursor:pointer;letter-spacing:.03em;transition:all .2s}
-.auth-btn:active{background:#e8e8e8}
-.auth-btn:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.3)}
-.auth-btn-ghost{width:100%;padding:14px;background:transparent;border:1px solid rgba(255,255,255,.12);border-radius:12px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:rgba(255,255,255,.5);cursor:pointer;letter-spacing:.03em;margin-top:10px}
-.auth-btn-ghost:active{background:rgba(255,255,255,.05)}
-.auth-footer{margin-top:auto;padding-top:24px}
-.ob-slides-wrap{overflow:hidden;flex:1;min-height:0}
-.ob-slides{display:flex;width:300%;height:100%;transition:transform .4s cubic-bezier(.16,1,.3,1)}
-.ob-slide{width:33.333%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center}
-.ob-icon{width:96px;height:96px;border-radius:28px;display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:28px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
-.ob-title{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:12px;line-height:1.25}
-.ob-sub{font-size:14px;color:rgba(255,255,255,.45);line-height:1.6;max-width:290px}
-.ob-dots{display:flex;gap:7px;justify-content:center;padding:16px 0}
-.ob-dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.2);transition:all .3s}
-.ob-dot.act{width:20px;background:#fff}
-.otp-row{display:flex;gap:9px;justify-content:center;margin:20px 0}
-.otp-box{width:48px;height:56px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;text-align:center;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;outline:none;transition:all .2s}
-.otp-box:focus{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.09)}
-.otp-box.err{border-color:rgba(255,60,80,.5);background:rgba(255,60,80,.06)}
-.otp-timer-row{font-size:12px;color:rgba(255,255,255,.3);text-align:center}
-.otp-timer-row b{color:rgba(255,255,255,.6)}
-.resend-btn{font-size:13px;color:rgba(66,133,244,.8);background:none;border:none;padding:8px;text-align:center;width:100%;cursor:pointer;display:none}
-.plate-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
-.plate-item{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px}
-.plate-num{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:#fff;flex:1;letter-spacing:.06em}
-.plate-del{width:28px;height:28px;background:rgba(255,60,80,.08);border:1px solid rgba(255,60,80,.15);border-radius:7px;color:rgba(255,80,100,.6);font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.add-plate-row{display:flex;gap:8px}
-.add-plate-input{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 14px;color:#fff;outline:none;text-transform:uppercase;letter-spacing:.07em}
-.add-plate-btn{padding:13px 15px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
-
-
-<!-- ONBOARDING -->
-<div class="auth-screen" id="scr-onboard">
-  <div class="ob-slides-wrap">
-    <div class="ob-slides" id="ob-slides">
-      <div class="ob-slide"><div class="ob-icon">&#127359;</div><div class="ob-title">Gaseste loc de parcare in Cluj</div><div class="ob-sub">Blocatoare inteligente in timp real &mdash; vezi ce e liber chiar acum pe harta.</div></div>
-      <div class="ob-slide"><div class="ob-icon">&#128241;</div><div class="ob-title">Scaneaza si parcheza instant</div><div class="ob-sub">Scanezi codul QR de pe blocator, platesti si blocatorul coboara automat.</div></div>
-      <div class="ob-slide"><div class="ob-icon">&#9889;</div><div class="ob-title">Platesti exact cat stai</div><div class="ob-sub">Cand pleci, senzorul detecteaza si blocatorul se ridica. Diferenta se ajusteaza automat.</div></div>
-    </div>
-  </div>
-  <div class="ob-dots"><div class="ob-dot act" id="dot-0"></div><div class="ob-dot" id="dot-1"></div><div class="ob-dot" id="dot-2"></div></div>
-  <div style="padding:0 20px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px">
-    <button class="auth-btn" id="ob-next-btn" onclick="obNext()">CONTINUA</button>
-    <button class="auth-btn-ghost" onclick="showAuthScreen('scr-phone')">Am deja cont &mdash; Autentifica-ma</button>
-  </div>
-</div>
-<!-- TELEFON -->
-<div class="auth-screen" id="scr-phone">
-  <div class="auth-inner">
-    <button class="auth-back" onclick="showAuthScreen('scr-onboard')">&#8592;</button>
-    <div class="auth-title">Numarul tau de telefon</div>
-    <div class="auth-sub">Iti trimitem un cod SMS pentru a confirma ca numarul iti apartine.</div>
-    <div class="auth-group">
-      <label class="auth-label">TELEFON</label>
-      <div style="display:flex;gap:8px">
-        <div style="width:68px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 10px;text-align:center;font-weight:600;color:#fff;flex-shrink:0">&#127479;&#127476; +40</div>
-        <input class="auth-input" id="a-phone" type="tel" inputmode="numeric" placeholder="7XX XXX XXX" maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)" style="flex:1">
-      </div>
-      <div class="auth-err" id="a-err-phone">Introdu un numar valid de 9 cifre.</div>
-    </div>
-    <div style="font-size:12px;color:rgba(255,255,255,.25);line-height:1.5">Prin continuare esti de acord cu Termenii si Conditiile TireaPark.</div>
-    <div class="auth-footer"><button class="auth-btn" id="a-send-btn" onclick="aSendOTP()">TRIMITE COD SMS</button></div>
-  </div>
-</div>
-<!-- OTP -->
-<div class="auth-screen" id="scr-otp">
-  <div class="auth-inner">
-    <button class="auth-back" onclick="showAuthScreen('scr-phone')">&#8592;</button>
-    <div class="auth-title">Cod de verificare</div>
-    <div class="auth-sub" id="a-otp-sub">Am trimis un cod de 6 cifre la numarul tau.</div>
-    <div class="otp-row">
-      <input class="otp-box" id="otp0" type="tel" inputmode="numeric" maxlength="1" oninput="aOtpInput(this,0)">
-      <input class="otp-box" id="otp1" type="tel" inputmode="numeric" maxlength="1" oninput="aOtpInput(this,1)">
-      <input class="otp-box" id="otp2" type="tel" inputmode="numeric" maxlength="1" oninput="aOtpInput(this,2)">
-      <input class="otp-box" id="otp3" type="tel" inputmode="numeric" maxlength="1" oninput="aOtpInput(this,3)">
-      <input class="otp-box" id="otp4" type="tel" inputmode="numeric" maxlength="1" oninput="aOtpInput(this,4)">
-      <input class="otp-box" id="otp5" type="tel" inputmode="numeric" maxlength="1" oninput="aOtpInput(this,5)">
-    </div>
-    <div class="auth-err" id="a-err-otp" style="text-align:center">Cod incorect. Incearca din nou.</div>
-    <div class="otp-timer-row" id="a-timer-row">Retrimite codul in <b id="a-countdown">60</b>s</div>
-    <button class="resend-btn" id="a-resend-btn" onclick="aSendOTP()">Retrimite codul SMS</button>
-    <div class="auth-footer"><button class="auth-btn" id="a-verify-btn" onclick="aVerifyOTP()">VERIFICA CODUL</button></div>
-  </div>
-</div>
-<!-- DATE PROFIL -->
-<div class="auth-screen" id="scr-profile-setup">
-  <div class="auth-inner">
-    <div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.14em;font-family:'Space Grotesk',sans-serif;font-weight:700;margin-bottom:20px;padding-top:max(4px,env(safe-area-inset-top))">TELEFON VERIFICAT &#10003;</div>
-    <div class="auth-title">Datele tale</div>
-    <div class="auth-sub">Completeaza pentru a putea rezerva si plati parcari.</div>
-    <div class="auth-group"><label class="auth-label">NUME COMPLET</label><input class="auth-input" id="a-name" type="text" placeholder="Ion Popescu" autocomplete="name"><div class="auth-err" id="a-err-name">Introdu numele complet.</div></div>
-    <div class="auth-group"><label class="auth-label">EMAIL</label><input class="auth-input" id="a-email" type="email" placeholder="ion@exemplu.com" autocomplete="email"><div class="auth-err" id="a-err-email">Introdu un email valid.</div></div>
-    <div class="auth-group"><label class="auth-label">PAROLA</label><input class="auth-input" id="a-pass" type="password" placeholder="Minim 6 caractere" autocomplete="new-password"><div class="auth-err" id="a-err-pass">Parola trebuie sa aiba minim 6 caractere.</div></div>
-    <div class="auth-footer"><button class="auth-btn" onclick="aSaveProfile()">CONTINUA &#8594;</button></div>
-  </div>
-</div>
-<!-- NUMERE MASINI -->
-<div class="auth-screen" id="scr-cars">
-  <div class="auth-inner">
-    <button class="auth-back" onclick="showAuthScreen('scr-profile-setup')">&#8592;</button>
-    <div class="auth-title">Numerele de masina</div>
-    <div class="auth-sub">Adauga pana la 5 numere. Le poti modifica oricand din profil.</div>
-    <div class="plate-list" id="a-plate-list"></div>
-    <div class="add-plate-row" id="a-add-plate-row">
-      <input class="add-plate-input" id="a-plate" type="text" placeholder="CJ-123-ABC" maxlength="10" oninput="this.value=this.value.toUpperCase()">
-      <button class="add-plate-btn" onclick="aAddPlate()">+ ADAUGA</button>
-    </div>
-    <div class="auth-err" id="a-err-plate">Format invalid. Ex: CJ-123-ABC</div>
-    <div class="auth-footer">
-      <button class="auth-btn" onclick="aFinish()">INCEPE SA PARCHEZI &#128663;</button>
-      <div style="text-align:center;margin-top:12px;font-size:12px;color:rgba(255,255,255,.25)">Poti adauga numere si mai tarziu din profil</div>
-    </div>
-  </div>
-</div>
 
 <div id="boot">
   <div class="boot-ring"></div>
@@ -255,8 +130,8 @@ input,button,select,textarea{font-size:16px!important}
 </div>
 
 <div id="topbar">
-  <div class="stat"><div class="stat-dot" style="background:#00e64d"></div><div class="stat-txt"><b id="cnt-free">7</b> LIBERE</div></div>
-  <div class="stat"><div class="stat-dot" style="background:#ff0022"></div><div class="stat-txt"><b id="cnt-occ">3</b> OCUPATE</div></div>
+  <div class="stat"><div class="stat-dot" style="background:#00e64d"></div><div class="stat-txt"><b id="cnt-free">0</b> LIBERE</div></div>
+  <div class="stat"><div class="stat-dot" style="background:#ff0022"></div><div class="stat-txt"><b id="cnt-occ">0</b> OCUPATE</div></div>
   <div class="stat"><div class="stat-dot" style="background:#facc15;animation:blink 1.4s infinite"></div><div class="stat-txt">LIVE</div></div>
   <div id="search-wrap">
     <svg id="search-ico" width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#fff" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
@@ -328,7 +203,7 @@ input,button,select,textarea{font-size:16px!important}
     <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#fff">SCANEAZA COD</div>
     <button onclick="closeScanner()" style="width:32px;height:32px;background:rgba(255,255,255,.1);border:none;border-radius:8px;color:#fff;font-size:16px;cursor:pointer">✕</button>
   </div>
-  <video id="scan-video" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
+  <video id="scan-video" autoplay playsinline muted style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
   <div style="position:relative;z-index:2;width:220px;height:220px">
     <div style="position:absolute;top:0;left:0;width:28px;height:28px;border-top:3px solid #00e64d;border-left:3px solid #00e64d;border-radius:3px 0 0 0"></div>
     <div style="position:absolute;top:0;right:0;width:28px;height:28px;border-top:3px solid #00e64d;border-right:3px solid #00e64d;border-radius:0 3px 0 0"></div>
@@ -351,14 +226,14 @@ input,button,select,textarea{font-size:16px!important}
     <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px 8px;text-align:center"><div id="log-total-hours" style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#fff">0</div><div style="font-size:8px;color:rgba(255,255,255,.3);margin-top:2px">ORE TOTAL</div></div>
     <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px 8px;text-align:center"><div id="log-total-cost" style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#facc15">0</div><div style="font-size:8px;color:rgba(255,255,255,.3);margin-top:2px">LEI TOTAL</div></div>
   </div>
-  <div id="log-list" style="flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px"></div>
+  <div id="log-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px;display:flex;flex-direction:column;gap:8px"></div>
   <div style="padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.06)">
     <button onclick="clearLog()" style="width:100%;padding:13px;background:rgba(255,50,70,.08);border:1px solid rgba(255,50,70,.18);border-radius:10px;color:rgba(255,70,90,.7);font-size:12px;font-weight:700;cursor:pointer">STERGE ISTORICUL</button>
   </div>
 </div>
 
 <!-- AGENT PANEL -->
-<div id="agent-panel" style="display:none;position:fixed;inset:0;z-index:40;background:#2d3748;flex-direction:column;overflow-y:auto">
+<div id="agent-panel" style="display:none;position:fixed;inset:0;z-index:40;background:#2d3748;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch">
   <div style="padding:max(14px,env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07);position:sticky;top:0;background:#2d3748;z-index:2">
     <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff">CONTUL MEU</div>
     <button onclick="closeAgent()" style="width:32px;height:32px;background:rgba(255,255,255,.08);border:none;border-radius:8px;color:#fff;font-size:16px;cursor:pointer">✕</button>
@@ -440,173 +315,313 @@ input,button,select,textarea{font-size:16px!important}
   </div>
 </div>
 
+<!-- MODAL PLATA -->
+<div id="pay-overlay" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);align-items:flex-end;justify-content:center">
+  <div id="pay-modal" style="background:#283040;border-radius:20px 20px 0 0;border-top:1px solid rgba(255,255,255,.12);width:100%;max-width:480px;padding:0 20px calc(28px + env(safe-area-inset-bottom));animation:slideUp .35s cubic-bezier(.16,1,.3,1);max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch">
+    <div style="width:32px;height:3px;background:rgba(255,255,255,.15);border-radius:3px;margin:12px auto 18px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#fff">Plata rezervare</div>
+        <div id="pay-subtitle" style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">LOC #A1 · 5 lei/ora</div>
+      </div>
+      <button onclick="closePayModal()" style="width:32px;height:32px;background:rgba(255,255,255,.08);border:none;border-radius:8px;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;margin-bottom:14px">
+      <div style="font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.1em;margin-bottom:10px">DURATA PARCARE</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button onclick="changeHours(-1)" style="width:36px;height:36px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">−</button>
+        <div style="flex:1;text-align:center">
+          <div id="pay-hours" style="font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:#fff">1</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.3)">ore</div>
+        </div>
+        <button onclick="changeHours(1)" style="width:36px;height:36px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">+</button>
+        <div style="background:rgba(250,204,21,.1);border:1px solid rgba(250,204,21,.2);border-radius:10px;padding:10px 16px;text-align:center;min-width:80px">
+          <div id="pay-total" style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#facc15">5</div>
+          <div style="font-size:9px;color:rgba(250,204,21,.5)">LEI TOTAL</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:14px">
+      <button id="tab-card" onclick="setPayTab('card')" style="flex:1;padding:9px 6px;background:#fff;border:none;border-radius:9px;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;color:#000;cursor:pointer">CARD</button>
+      <button id="tab-revolut" onclick="setPayTab('revolut')" style="flex:1;padding:9px 6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:9px;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer">REVOLUT</button>
+      <button id="tab-applepay" onclick="setPayTab('applepay')" style="flex:1;padding:9px 6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:9px;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer">APPLE/G PAY</button>
+    </div>
+    <div id="content-card">
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+        <div>
+          <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.08em;margin-bottom:5px">NUMAR CARD</div>
+          <div style="position:relative">
+            <input id="pay-card-num" type="tel" inputmode="numeric" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 44px 13px 14px;color:#fff;font-size:15px;outline:none;letter-spacing:.05em">
+            <div id="card-brand-icon" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none">💳</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.08em;margin-bottom:5px">EXPIRARE</div>
+            <input id="pay-expiry" type="tel" inputmode="numeric" placeholder="MM / AA" maxlength="7" oninput="fmtExpiry(this)" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 14px;color:#fff;font-size:15px;outline:none">
+          </div>
+          <div>
+            <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.08em;margin-bottom:5px">CVV</div>
+            <div style="position:relative">
+              <input id="pay-cvv" type="tel" inputmode="numeric" placeholder="•••" maxlength="4" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 14px;color:#fff;font-size:15px;outline:none">
+              <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;opacity:.4" onclick="toggleCvv()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#fff" stroke-width="1.5"/><circle cx="12" cy="12" r="3" stroke="#fff" stroke-width="1.5"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.08em;margin-bottom:5px">NUME PE CARD</div>
+          <input id="pay-name" type="text" placeholder="PRENUME NUME" autocomplete="cc-name" oninput="this.value=this.value.toUpperCase()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 14px;color:#fff;font-size:15px;outline:none;letter-spacing:.04em">
+        </div>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+          <div id="save-card-toggle" onclick="toggleSaveCard()" data-on="0" style="width:40px;height:22px;background:rgba(255,255,255,.15);border-radius:11px;position:relative;flex-shrink:0;transition:background .2s">
+            <div style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:all .2s"></div>
+          </div>
+          <span style="font-size:12px;color:rgba(255,255,255,.5)">Salveaza cardul pentru data viitoare</span>
+        </label>
+      </div>
+    </div>
+    <div id="content-revolut" style="display:none;margin-bottom:14px">
+      <div style="background:rgba(25,28,73,.6);border:1px solid rgba(100,100,255,.2);border-radius:12px;padding:20px;text-align:center">
+        <div style="font-size:32px;margin-bottom:8px">R</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:4px">Plata prin Revolut</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px">Vei fi redirectionat catre aplicatia Revolut</div>
+        <div id="revolut-amount" style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#fff;margin-bottom:4px">5 lei</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.3)">de plata</div>
+      </div>
+    </div>
+    <div id="content-applepay" style="display:none;margin-bottom:14px">
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;text-align:center">
+        <div style="font-size:32px;margin-bottom:8px">⬛</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:4px">Apple Pay / Google Pay</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px">Confirma cu amprenta sau Face ID</div>
+        <div id="applepay-amount" style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#fff;margin-bottom:4px">5 lei</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.3)">de plata</div>
+      </div>
+    </div>
+    <div id="pay-error" style="display:none;background:rgba(255,60,80,.1);border:1px solid rgba(255,60,80,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:rgba(255,100,120,.9);margin-bottom:12px"></div>
+    <button onclick="confirmPayment()" id="pay-confirm-btn" style="width:100%;padding:17px;background:#fff;border:none;border-radius:12px;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:#000;cursor:pointer;transition:all .2s;letter-spacing:.03em">PLATESTE 5 LEI</button>
+    <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;padding-bottom:4px">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="rgba(255,255,255,.25)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      <span style="font-size:10px;color:rgba(255,255,255,.2)">Plata securizata SSL · PCI DSS compliant</span>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+</style>
+
 <script>
+// ── FIREBASE INIT (compat SDK - funcționează pe toate browserele) ──
+var firebaseConfig = {
+  apiKey:'AIzaSyDF63PQ9s2AG9_8ho9u6v-myzDrs_SrtbY',
+  authDomain:'tireapark.firebaseapp.com',
+  databaseURL:'https://tireapark-default-rtdb.firebaseio.com',
+  projectId:'tireapark',
+  storageBucket:'tireapark.firebasestorage.app',
+  messagingSenderId:'503087510644',
+  appId:'1:503087510644:web:18d5e122c67afe110e8d21'
+};
+var fbApp = firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+
 // ── BOOT ──────────────────────────────────────────────
-const LOGS=['SE INITIALZEAZA...','SE INCARCA CLUJ-NAPOCA...','SE CONSTRUIESC CLADIRILE...','SE APLICA TEXTURILE...','SE CALIBREAZA CAMERA...','SISTEM PORNIT'];
-let pct=0,mi=0;
-const bf=document.getElementById('b-fill'),bl=document.getElementById('b-log'),bp=document.getElementById('b-pct');
-const biv=setInterval(()=>{
+var LOGS=['SE INITIALZEAZA...','SE INCARCA CLUJ-NAPOCA...','SE CONSTRUIESC CLADIRILE...','SE APLICA TEXTURILE...','SE CALIBREAZA CAMERA...','SISTEM PORNIT'];
+var pct=0, mi=0;
+var bf=document.getElementById('b-fill'), bl=document.getElementById('b-log'), bp=document.getElementById('b-pct');
+
+// Fallback: forteaza ascunderea boot screen dupa 12 secunde maxim
+var bootFallback = setTimeout(function(){hideBoot();}, 12000);
+
+function hideBoot(){
+  clearTimeout(bootFallback);
+  clearInterval(biv);
+  var b=document.getElementById('boot');
+  b.style.transition='opacity .8s';
+  b.style.opacity='0';
+  setTimeout(function(){b.style.display='none';}, 800);
+}
+
+var biv=setInterval(function(){
   pct=Math.min(100,pct+Math.random()*15+5);
-  bf.style.width=pct+'%'; bp.textContent=Math.floor(pct)+'%';
+  bf.style.width=pct+'%';
+  bp.textContent=Math.floor(pct)+'%';
   if(mi<LOGS.length) bl.textContent=LOGS[mi++];
   if(pct>=100){
-    clearInterval(biv); bp.textContent='100%';
-    setTimeout(()=>{
-      const b=document.getElementById('boot');
-      b.style.transition='opacity .8s'; b.style.opacity='0';
-      setTimeout(()=>{b.style.display='none'; authBoot();},800);
-    },600);
+    bp.textContent='100%';
+    setTimeout(function(){hideBoot();}, 600);
   }
 },330);
 
 // ── CLOCK ─────────────────────────────────────────────
 function tick(){
-  const n=new Date();
+  var n=new Date();
   document.getElementById('clk').textContent=
     String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');
-  const D=['DUM','LUN','MAR','MIE','JOI','VIN','SAM'],M=['IAN','FEB','MAR','APR','MAI','IUN','IUL','AUG','SEP','OCT','NOV','DEC'];
+  var D=['DUM','LUN','MAR','MIE','JOI','VIN','SAM'],M=['IAN','FEB','MAR','APR','MAI','IUN','IUL','AUG','SEP','OCT','NOV','DEC'];
   document.getElementById('dt').textContent=D[n.getDay()]+' '+n.getDate()+' '+M[n.getMonth()]+' '+n.getFullYear();
 }
 tick(); setInterval(tick,1000);
 
-// ── DATE SPOTS ────────────────────────────────────────
-let SPOTS=[
-  {id:'PROBA-1',lat:46.7712,lng:23.5898,addr:'PROBA',price:5,hours:'08-18',free:true},
-  {id:'PROBA-2',lat:46.7695,lng:23.5921,addr:'PROBA',price:4,hours:'09-17',free:false},
-];
-let fbMarkers=[];
-(async()=>{
-  const {initializeApp}=await import('https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js');
-  const {getDatabase,ref,onValue}=await import('https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js');
-  const app=initializeApp({apiKey:'AIzaSyDF63PQ9s2AG9_8ho9u6v-myzDrs_SrtbY',authDomain:'tireapark.firebaseapp.com',databaseURL:'https://tireapark-default-rtdb.firebaseio.com',projectId:'tireapark',storageBucket:'tireapark.firebasestorage.app',messagingSenderId:'503087510644',appId:'1:503087510644:web:18d5e122c67afe110e8d21'});
-  const db=getDatabase(app);
-  onValue(ref(db,'blocatoare'),snap=>{
-    fbMarkers.forEach(m=>m.remove()); fbMarkers=[];
-    SPOTS=SPOTS.slice(0,2);
-    const data=snap.val()||{};
-    Object.values(data).forEach(b=>{
-      const s={id:b.id,lat:b.lat,lng:b.lng,addr:b.addr||'',price:b.price||5,hours:b.hours||'08-20',free:b.free!==false};
-      SPOTS.push(s);
-      const el=document.createElement('div');
-      el.className='mk';
-      const color=s.free?'#00e64d':'#ff0022';
-      const cr=s.free?'0,230,77':'255,0,34';
-      el.innerHTML='<div class="mk-pulse" style="background:rgba('+cr+',.2)"></div><div class="mk-inner"><div class="mk-blocker"><div class="mk-arc" style="color:'+color+'"></div><div class="mk-base"><div class="mk-solar"></div></div></div></div>';
-      el.addEventListener('click',()=>openPanel(s));
-      const m=new mapboxgl.Marker({element:el,anchor:'center',pitchAlignment:'viewport',rotationAlignment:'viewport'}).setLngLat([s.lng,s.lat]).addTo(map);
-      fbMarkers.push(m);
-    });
-    document.getElementById('cnt-free').textContent=SPOTS.filter(s=>s.free).length;
-    document.getElementById('cnt-occ').textContent=SPOTS.filter(s=>!s.free).length;
-  });
-})();
-
 // ── HARTA ─────────────────────────────────────────────
 mapboxgl.accessToken='pk.eyJ1IjoidGlyZWEiLCJhIjoiY21ucnYwZ2N3MDVkYzJvcGZ2dm00YWh5aCJ9.SvAkqaOFhVpx0cC_I8QRSg';
-const MAP_CENTER=[23.5905,46.7712];
+var MAP_CENTER=[23.5905,46.7712];
 
-const map=new mapboxgl.Map({
+var map=new mapboxgl.Map({
   container:'map',
   style:'mapbox://styles/mapbox/standard',
   center:MAP_CENTER,
-  zoom:16, pitch:60, bearing:20, antialias:true,
+  zoom:16, pitch:60, bearing:20,
+  antialias: false, // dezactivat pe mobil pentru performanta
   maxBounds:[[23.48,46.70],[23.68,46.84]],
   minZoom:12, maxZoom:22, maxPitch:85,
-  touchZoomRotate:true, dragRotate:true
+  touchZoomRotate:true, dragRotate:true,
+  preserveDrawingBuffer:false,
+  fadeDuration:0
 });
 map.addControl(new mapboxgl.NavigationControl({showCompass:false,showZoom:true}),'bottom-right');
 
-map.on('load',()=>{
-  // Stil 3D dusk + road labels ON
+// ── DATE SPOTS ────────────────────────────────────────
+var SPOTS=[
+  {id:'PROBA-1',lat:46.7712,lng:23.5898,addr:'PROBA',price:5,hours:'08-18',free:true},
+  {id:'PROBA-2',lat:46.7695,lng:23.5921,addr:'PROBA',price:4,hours:'09-17',free:false},
+];
+var fbMarkers=[];
+var mapReady=false;
+var pendingFbData=null;
+
+map.on('load',function(){
+  mapReady=true;
   try{ map.setConfigProperty('basemap','lightPreset','dusk'); }catch(e){}
   try{ map.setConfigProperty('basemap','showRoadLabels',true); }catch(e){}
   try{ map.setConfigProperty('basemap','showPointOfInterestLabels',false); }catch(e){}
   try{ map.setConfigProperty('basemap','showTransitLabels',false); }catch(e){}
 
-  addMarkers();
-  setTimeout(()=>{
-    map.flyTo({center:MAP_CENTER,zoom:16.5,pitch:65,bearing:20,duration:4000,
-      easing:t=>t<.5?4*t*t*t:(t-1)*(2*t-2)*(2*t-2)+1});
+  addMarkers(SPOTS);
+
+  // Daca Firebase a venit deja inainte ca harta sa fie gata
+  if(pendingFbData !== null){
+    applyFbData(pendingFbData);
+    pendingFbData = null;
+  }
+
+  setTimeout(function(){
+    map.flyTo({center:MAP_CENTER,zoom:16.5,pitch:65,bearing:20,duration:3000,
+      easing:function(t){return t<.5?4*t*t*t:(t-1)*(2*t-2)*(2*t-2)+1;}});
   },500);
 });
 
-// ── MARKERI ───────────────────────────────────────────
-function addMarkers(){
-  SPOTS.forEach(s=>{
-    const el=document.createElement('div');
-    el.className='mk';
-    const color=s.free?'#00e64d':'#ff0022';
-    const cr=s.free?'0,230,77':'255,0,34';
-    el.innerHTML=
-      '<div class="mk-pulse" style="background:rgba('+cr+',.2)"></div>'+
-      '<div class="mk-inner"><div class="mk-blocker">'+
-      '<div class="mk-arc" style="color:'+color+'"></div>'+
-      '<div class="mk-base"><div class="mk-solar"></div></div>'+
-      '</div></div>';
-    el.addEventListener('click',()=>openPanel(s));
-    new mapboxgl.Marker({
-      element:el,
-      anchor:'center',
-      pitchAlignment:'viewport',
-      rotationAlignment:'viewport'
-    }).setLngLat([s.lng,s.lat]).addTo(map);
+map.on('error', function(e){
+  console.warn('Mapbox error:', e);
+  hideBoot(); // ascunde boot screen chiar daca harta are eroare
+});
+
+// ── FIREBASE LISTENER ─────────────────────────────────
+db.ref('blocatoare').on('value', function(snap){
+  var data = snap.val() || {};
+  if(!mapReady){
+    pendingFbData = data;
+    return;
+  }
+  applyFbData(data);
+});
+
+function applyFbData(data){
+  fbMarkers.forEach(function(m){m.remove();});
+  fbMarkers=[];
+  SPOTS=SPOTS.slice(0,2);
+  Object.values(data).forEach(function(b){
+    var s={id:b.id,lat:b.lat,lng:b.lng,addr:b.addr||'',price:b.price||5,hours:b.hours||'08-20',free:b.free!==false};
+    SPOTS.push(s);
+    var m=createMarker(s);
+    fbMarkers.push(m);
   });
+  document.getElementById('cnt-free').textContent=SPOTS.filter(function(s){return s.free;}).length;
+  document.getElementById('cnt-occ').textContent=SPOTS.filter(function(s){return !s.free;}).length;
+}
+
+// ── MARKERI ───────────────────────────────────────────
+function createMarker(s){
+  var el=document.createElement('div');
+  el.className='mk';
+  var color=s.free?'#00e64d':'#ff0022';
+  var cr=s.free?'0,230,77':'255,0,34';
+  el.innerHTML=
+    '<div class="mk-pulse" style="background:rgba('+cr+',.2)"></div>'+
+    '<div class="mk-inner"><div class="mk-blocker">'+
+    '<div class="mk-arc" style="color:'+color+'"></div>'+
+    '<div class="mk-base"><div class="mk-solar"></div></div>'+
+    '</div></div>';
+  el.addEventListener('click',function(){openPanel(s);});
+  return new mapboxgl.Marker({
+    element:el,
+    anchor:'center',
+    pitchAlignment:'viewport',
+    rotationAlignment:'viewport'
+  }).setLngLat([s.lng,s.lat]).addTo(map);
+}
+
+function addMarkers(spots){
+  spots.forEach(function(s){ createMarker(s); });
 }
 
 // ── VEDERI ────────────────────────────────────────────
 function openStreetView(){
-  const c=map.getCenter();
+  var c=map.getCenter();
   window.open('https://www.google.com/maps/@?api=1&map_action=pano&viewpoint='+c.lat+','+c.lng,'_blank');
 }
-const VIEWS={
+var VIEWS={
   aerian:{zoom:17.5,pitch:80,bearing:20,duration:1600},
   sus:{zoom:14,pitch:0,bearing:0,duration:1400}
 };
 function setView(mode){
-  document.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.vbtn').forEach(function(b){b.classList.remove('active');});
   document.getElementById('v-'+mode).classList.add('active');
   try{ map.setConfigProperty('basemap','lightPreset','dusk'); }catch(e){}
-  map.flyTo({center:map.getCenter(),...VIEWS[mode],easing:t=>1-Math.pow(1-t,3)});
+  map.flyTo(Object.assign({center:map.getCenter()},VIEWS[mode],{easing:function(t){return 1-Math.pow(1-t,3);}}));
 }
 
 // ── CAUTARE ───────────────────────────────────────────
-const searchInput=document.getElementById('search-input');
-const searchResults=document.getElementById('search-results');
-let searchTimer=null;
+var searchInput=document.getElementById('search-input');
+var searchResults=document.getElementById('search-results');
+var searchTimer=null;
 searchInput.addEventListener('input',function(){
   clearTimeout(searchTimer);
-  const q=this.value.trim();
+  var q=this.value.trim();
   if(q.length<3){searchResults.style.display='none';return;}
-  searchTimer=setTimeout(()=>doSearch(q),500);
+  searchTimer=setTimeout(function(){doSearch(q);},500);
 });
-async function doSearch(q){
-  try{
-    const url='https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q+' Cluj-Napoca')+'&format=json&limit=5&countrycodes=ro&viewbox=23.48,46.84,23.68,46.70&bounded=1&accept-language=ro';
-    const res=await fetch(url,{headers:{'Accept':'application/json'}});
-    const data=await res.json();
+function doSearch(q){
+  var url='https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q+' Cluj-Napoca')+'&format=json&limit=5&countrycodes=ro&viewbox=23.48,46.84,23.68,46.70&bounded=1&accept-language=ro';
+  fetch(url,{headers:{'Accept':'application/json'}})
+  .then(function(res){return res.json();})
+  .then(function(data){
     searchResults.innerHTML='';
     if(!data.length){searchResults.style.display='none';return;}
-    data.forEach(f=>{
-      const item=document.createElement('div');
+    data.forEach(function(f){
+      var item=document.createElement('div');
       item.className='sr-item';
-      let name=f.display_name.replace(/, Romania/g,'').replace(/, Cluj-Napoca/g,'').replace(/, Cluj/g,'');
+      var name=f.display_name.replace(/, Romania/g,'').replace(/, Cluj-Napoca/g,'').replace(/, Cluj/g,'');
       item.textContent=name;
-      item.addEventListener('click',()=>{
+      item.addEventListener('click',function(){
         map.flyTo({center:[parseFloat(f.lon),parseFloat(f.lat)],zoom:17,pitch:60,duration:1200});
         searchResults.style.display='none'; searchInput.value=name; searchInput.blur();
       });
       searchResults.appendChild(item);
     });
     searchResults.style.display='block';
-  }catch(e){searchResults.style.display='none';}
+  })
+  .catch(function(){searchResults.style.display='none';});
 }
-document.addEventListener('click',e=>{
+document.addEventListener('click',function(e){
   if(!e.target.closest('#search-wrap')&&!e.target.closest('#search-results'))
     searchResults.style.display='none';
 });
 
 // ── PANEL BLOCATOR ────────────────────────────────────
-let cur=null;
+var cur=null;
 function openPanel(s){
   cur=s;
   document.getElementById('p-id').textContent='LOC #'+s.id;
@@ -614,15 +629,15 @@ function openPanel(s){
   document.getElementById('p-addr').textContent=s.addr;
   document.getElementById('p-price').textContent=s.price;
   document.getElementById('p-hours').textContent=s.hours;
-  const ps=document.getElementById('p-stat');
+  var ps=document.getElementById('p-stat');
   ps.textContent=s.free?'LIBER':'OCUPAT';
   ps.style.color=s.free?'#00e64d':'#ff0022';
-  const btn=document.getElementById('p-btn');
+  var btn=document.getElementById('p-btn');
   btn.textContent=s.free?'REZERVA':'NOTIFICA-MA';
   btn.className='p-btn '+(s.free?'free':'occ');
   document.getElementById('pover').style.display='block';
   document.getElementById('panel').classList.add('open');
-  map.flyTo({center:[s.lng,s.lat+.0003],zoom:18,pitch:72,duration:1000,easing:t=>1-Math.pow(1-t,3)});
+  map.flyTo({center:[s.lng,s.lat+.0003],zoom:18,pitch:72,duration:1000,easing:function(t){return 1-Math.pow(1-t,3);}});
 }
 function closePanel(){
   document.getElementById('panel').classList.remove('open');
@@ -635,16 +650,14 @@ function doBook(){
 }
 function doNavigate(){
   if(!cur)return;
-  const dest=cur.lat+','+cur.lng;
+  var dest=cur.lat+','+cur.lng;
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(
-      pos=>{
-        const org=pos.coords.latitude+','+pos.coords.longitude;
+      function(pos){
+        var org=pos.coords.latitude+','+pos.coords.longitude;
         window.open('https://www.google.com/maps/dir/?api=1&origin='+org+'&destination='+dest+'&travelmode=driving','_blank');
       },
-      ()=>{
-        window.open('https://www.google.com/maps/dir/?api=1&destination='+dest+'&travelmode=driving','_blank');
-      },
+      function(){window.open('https://www.google.com/maps/dir/?api=1&destination='+dest+'&travelmode=driving','_blank');},
       {timeout:4000,maximumAge:30000}
     );
   } else {
@@ -655,9 +668,9 @@ function doNavigate(){
 // ── AGENT ─────────────────────────────────────────────
 function getProfile(){try{return JSON.parse(localStorage.getItem('tp_profile')||'{}');}catch(e){return{};}}
 function openAgent(){
-  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('act');});
   document.querySelectorAll('.ni')[3].classList.add('act');
-  const p=getProfile();
+  var p=getProfile();
   if(p.name){document.getElementById('agent-name-display').textContent=p.name;document.getElementById('agent-avatar').textContent=p.name[0].toUpperCase();}
   if(p.email)document.getElementById('agent-email-display').textContent=p.email;
   if(p.car)document.getElementById('car-display').textContent=p.car;
@@ -667,22 +680,23 @@ function openAgent(){
   if(p.phone)document.getElementById('inp-phone').value=p.phone;
   if(p.car)document.getElementById('inp-car').value=p.car;
   if(p.plate)document.getElementById('inp-plate').value=p.plate;
-  const pts=parseInt(localStorage.getItem('tp_points')||'0');
+  var pts=parseInt(localStorage.getItem('tp_points')||'0');
   document.getElementById('agent-points').textContent=pts;
   document.getElementById('points-display').textContent=pts;
   document.getElementById('points-value').textContent='= '+Math.floor(pts/10)+' lei';
-  const code=localStorage.getItem('tp_ref')||(()=>{const c='TIREA-'+Math.random().toString(36).substr(2,5).toUpperCase();localStorage.setItem('tp_ref',c);return c;})();
+  var code=localStorage.getItem('tp_ref');
+  if(!code){code='TIREA-'+Math.random().toString(36).substr(2,5).toUpperCase();localStorage.setItem('tp_ref',code);}
   document.getElementById('referral-code').textContent=code;
   document.getElementById('agent-panel').style.display='flex';
 }
 function closeAgent(){
   document.getElementById('agent-panel').style.display='none';
-  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('act');});
   document.querySelectorAll('.ni')[0].classList.add('act');
 }
-function toggleEdit(){const ed=document.getElementById('agent-edit');ed.style.display=ed.style.display==='flex'?'none':'flex';}
+function toggleEdit(){var ed=document.getElementById('agent-edit');ed.style.display=ed.style.display==='flex'?'none':'flex';}
 function saveProfile(){
-  const p=getProfile();
+  var p=getProfile();
   p.name=document.getElementById('inp-name').value.trim();
   p.email=document.getElementById('inp-email').value.trim();
   p.phone=document.getElementById('inp-phone').value.trim();
@@ -692,7 +706,7 @@ function saveProfile(){
   document.getElementById('agent-edit').style.display='none';
 }
 function saveCar(){
-  const p=getProfile();
+  var p=getProfile();
   p.car=document.getElementById('inp-car').value.trim();
   p.plate=document.getElementById('inp-plate').value.trim().toUpperCase();
   localStorage.setItem('tp_profile',JSON.stringify(p));
@@ -700,60 +714,64 @@ function saveCar(){
   if(p.plate)document.getElementById('plate-display').textContent=p.plate;
 }
 function selectPlan(type){
-  const msg=document.getElementById('plan-msg');
+  var msg=document.getElementById('plan-msg');
   msg.style.display='block';
   msg.textContent=type==='lunar'?'Abonament lunar activat - 49 lei/luna':'Abonament anual activat - 399 lei/an';
   localStorage.setItem('tp_plan',type);
 }
 function toggleNotif(el){
-  const on=el.dataset.on==='1';
+  var on=el.dataset.on==='1';
   el.dataset.on=on?'0':'1';
   el.style.background=on?'rgba(255,255,255,.15)':'#00e64d';
-  const dot=el.querySelector('div');
+  var dot=el.querySelector('div');
   dot.style.left=on?'3px':''; dot.style.right=on?'':'3px';
 }
 function copyReferral(){
-  const code=document.getElementById('referral-code').textContent;
-  navigator.clipboard?.writeText(code).then(()=>alert('Cod copiat: '+code)).catch(()=>alert('Cod: '+code));
+  var code=document.getElementById('referral-code').textContent;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(code).then(function(){alert('Cod copiat: '+code);}).catch(function(){alert('Cod: '+code);});
+  } else {
+    alert('Cod: '+code);
+  }
 }
 
 // ── LOG ───────────────────────────────────────────────
-function addPoints(n){const pts=parseInt(localStorage.getItem('tp_points')||'0')+n;localStorage.setItem('tp_points',pts);}
+function addPoints(n){var pts=parseInt(localStorage.getItem('tp_points')||'0')+n;localStorage.setItem('tp_points',String(pts));}
 function getLog(){try{return JSON.parse(localStorage.getItem('tp_log')||'[]');}catch(e){return[];}}
 function saveToLog(spot){
-  const log=getLog(), hours=Math.floor(Math.random()*3)+1;
-  log.unshift({id:spot.id,addr:spot.addr,price:spot.price,hours,cost:spot.price*hours,
+  var log=getLog(), hours=Math.floor(Math.random()*3)+1;
+  log.unshift({id:spot.id,addr:spot.addr,price:spot.price,hours:hours,cost:spot.price*hours,
     date:new Date().toLocaleDateString('ro-RO'),
     time:new Date().toLocaleTimeString('ro-RO',{hour:'2-digit',minute:'2-digit'}),ts:Date.now()});
   localStorage.setItem('tp_log',JSON.stringify(log.slice(0,50)));
 }
 function openLog(){
-  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('act');});
   document.querySelectorAll('.ni')[2].classList.add('act');
   document.getElementById('log-panel').style.display='flex';
   renderLog();
 }
 function renderLog(){
-  const log=getLog(), list=document.getElementById('log-list');
+  var log=getLog(), list=document.getElementById('log-list');
   document.getElementById('log-total-trips').textContent=log.length;
-  document.getElementById('log-total-hours').textContent=log.reduce((a,e)=>a+e.hours,0);
-  document.getElementById('log-total-cost').textContent=log.reduce((a,e)=>a+e.cost,0);
+  document.getElementById('log-total-hours').textContent=log.reduce(function(a,e){return a+e.hours;},0);
+  document.getElementById('log-total-cost').textContent=log.reduce(function(a,e){return a+e.cost;},0);
   if(!log.length){
     list.innerHTML='<div style="text-align:center;padding:40px 0;color:rgba(255,255,255,.2);font-size:13px">Nu ai nicio parcare inregistrata</div>';
     return;
   }
-  list.innerHTML=log.map(e=>
-    '<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px">'+
+  list.innerHTML=log.map(function(e){
+    return '<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px">'+
     '<div style="display:flex;align-items:center;gap:10px">'+
-    '<div style="width:36px;height:36px;background:rgba(0,230,77,.1);border:1px solid rgba(0,230,77,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#00e64d;flex-shrink:0">'+e.id+'</div>'+
+    '<div style="width:36px;height:36px;background:rgba(0,230,77,.1);border:1px solid rgba(0,230,77,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#00e64d;flex-shrink:0">'+e.id.slice(0,4)+'</div>'+
     '<div><div style="font-size:12px;font-weight:600;color:#fff">'+e.addr+'</div>'+
     '<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:2px">'+e.date+' · '+e.time+' · '+e.hours+'h</div></div></div>'+
-    '<div style="font-size:14px;font-weight:700;color:#facc15;flex-shrink:0">'+e.cost+' lei</div></div>'
-  ).join('');
+    '<div style="font-size:14px;font-weight:700;color:#facc15;flex-shrink:0">'+e.cost+' lei</div></div>';
+  }).join('');
 }
 function closeLog(){
   document.getElementById('log-panel').style.display='none';
-  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('act');});
   document.querySelectorAll('.ni')[0].classList.add('act');
 }
 function clearLog(){
@@ -761,37 +779,47 @@ function clearLog(){
 }
 
 // ── SCANNER ───────────────────────────────────────────
-let scanStream=null, scanInterval=null;
-async function openScanner(){
+var scanStream=null, scanInterval=null;
+function openScanner(){
   document.getElementById('scan-panel').style.display='flex';
   document.getElementById('scan-msg').textContent='INDREAPTA CAMERA SPRE COD';
   document.getElementById('scan-msg').style.color='rgba(255,255,255,.5)';
-  try{
-    scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-    const video=document.getElementById('scan-video');
-    video.srcObject=scanStream; video.play();
-    if('BarcodeDetector' in window){
-      const detector=new BarcodeDetector({formats:['qr_code','code_128']});
-      scanInterval=setInterval(async()=>{
-        try{const codes=await detector.detect(video);if(codes.length>0)handleScan(codes[0].rawValue);}catch(e){}
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    document.getElementById('scan-msg').textContent='CAMERA INDISPONIBILA';
+    document.getElementById('scan-msg').style.color='#ff0022';
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}})
+  .then(function(stream){
+    scanStream=stream;
+    var video=document.getElementById('scan-video');
+    video.srcObject=stream;
+    video.play();
+    if(typeof BarcodeDetector !== 'undefined'){
+      var detector=new BarcodeDetector({formats:['qr_code','code_128']});
+      scanInterval=setInterval(function(){
+        detector.detect(video).then(function(codes){
+          if(codes.length>0)handleScan(codes[0].rawValue);
+        }).catch(function(){});
       },500);
     } else {
-      document.getElementById('scan-msg').textContent='CAMERA ACTIVA';
+      document.getElementById('scan-msg').textContent='CAMERA ACTIVA - DETECTOR INDISPONIBIL';
     }
-  }catch(e){
+  })
+  .catch(function(){
     document.getElementById('scan-msg').textContent='NU S-A PUTUT ACCESA CAMERA';
     document.getElementById('scan-msg').style.color='#ff0022';
-  }
+  });
 }
 function handleScan(value){
   clearInterval(scanInterval);
   document.getElementById('scan-msg').textContent='COD DETECTAT: '+value;
   document.getElementById('scan-msg').style.color='#00e64d';
-  const spot=SPOTS.find(s=>s.id===value);
-  setTimeout(()=>{closeScanner();if(spot)openPanel(spot);else alert('Cod necunoscut: '+value);},1200);
+  var spot=SPOTS.find(function(s){return s.id===value;});
+  setTimeout(function(){closeScanner();if(spot)openPanel(spot);else alert('Cod necunoscut: '+value);},1200);
 }
 function closeScanner(){
-  if(scanStream)scanStream.getTracks().forEach(t=>t.stop());
+  if(scanStream)scanStream.getTracks().forEach(function(t){t.stop();});
   if(scanInterval)clearInterval(scanInterval);
   scanStream=null; scanInterval=null;
   document.getElementById('scan-panel').style.display='none';
@@ -799,13 +827,13 @@ function closeScanner(){
 
 // ── NAV ───────────────────────────────────────────────
 function setNav(el){
-  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('act');});
   el.classList.add('act');
 }
 
 // ── MODAL PLATA ───────────────────────────────────────
-let payHours=1;
-let activePayTab='card';
+var payHours=1;
+var activePayTab='card';
 
 function openPayModal(){
   if(!cur||!cur.free)return;
@@ -829,7 +857,7 @@ function changeHours(d){
 }
 function updatePayTotal(){
   if(!cur)return;
-  const total=payHours*cur.price;
+  var total=payHours*cur.price;
   document.getElementById('pay-hours').textContent=payHours;
   document.getElementById('pay-total').textContent=total;
   document.getElementById('pay-confirm-btn').textContent='PLATESTE '+total+' LEI';
@@ -838,10 +866,10 @@ function updatePayTotal(){
 }
 function setPayTab(tab){
   activePayTab=tab;
-  ['card','revolut','applepay'].forEach(t=>{
-    const btn=document.getElementById('tab-'+t);
-    const cont=document.getElementById('content-'+t);
-    const isActive=t===tab;
+  ['card','revolut','applepay'].forEach(function(t){
+    var btn=document.getElementById('tab-'+t);
+    var cont=document.getElementById('content-'+t);
+    var isActive=t===tab;
     btn.style.background=isActive?'#fff':'rgba(255,255,255,.07)';
     btn.style.color=isActive?'#000':'rgba(255,255,255,.4)';
     btn.style.border=isActive?'none':'1px solid rgba(255,255,255,.1)';
@@ -849,469 +877,65 @@ function setPayTab(tab){
   });
 }
 function fmtCard(el){
-  let v=el.value.replace(/\D/g,'').slice(0,16);
+  var v=el.value.replace(/\D/g,'').slice(0,16);
   el.value=v.replace(/(.{4})/g,'$1 ').trim();
-  const icon=document.getElementById('card-brand-icon');
-  if(v.startsWith('4'))icon.textContent='💳';
-  else if(v.startsWith('5')||v.startsWith('2'))icon.textContent='💳';
-  else if(v.startsWith('3'))icon.textContent='💳';
-  else icon.textContent='💳';
 }
 function fmtExpiry(el){
-  let v=el.value.replace(/\D/g,'').slice(0,4);
+  var v=el.value.replace(/\D/g,'').slice(0,4);
   if(v.length>=2) v=v.slice(0,2)+' / '+v.slice(2);
   el.value=v;
 }
 function toggleCvv(){
-  const cvv=document.getElementById('pay-cvv');
+  var cvv=document.getElementById('pay-cvv');
   cvv.type=cvv.type==='password'?'tel':'password';
 }
 function toggleSaveCard(){
-  const el=document.getElementById('save-card-toggle');
-  const on=el.dataset.on==='1';
+  var el=document.getElementById('save-card-toggle');
+  var on=el.dataset.on==='1';
   el.dataset.on=on?'0':'1';
   el.style.background=on?'rgba(255,255,255,.15)':'#00e64d';
-  const dot=el.querySelector('div');
+  var dot=el.querySelector('div');
   dot.style.left=on?'3px':''; dot.style.right=on?'':'3px';
 }
 function showPayError(msg){
-  const el=document.getElementById('pay-error');
+  var el=document.getElementById('pay-error');
   el.textContent=msg; el.style.display='block';
 }
 function confirmPayment(){
   document.getElementById('pay-error').style.display='none';
   if(activePayTab==='card'){
-    const num=document.getElementById('pay-card-num').value.replace(/\s/g,'');
-    const exp=document.getElementById('pay-expiry').value.replace(/\s/g,'').replace('/','');
-    const cvv=document.getElementById('pay-cvv').value;
-    const name=document.getElementById('pay-name').value.trim();
+    var num=document.getElementById('pay-card-num').value.replace(/\s/g,'');
+    var exp=document.getElementById('pay-expiry').value.replace(/\s/g,'').replace('/','');
+    var cvv=document.getElementById('pay-cvv').value;
+    var name=document.getElementById('pay-name').value.trim();
     if(num.length<16){showPayError('Numarul cardului este invalid.');return;}
     if(exp.length<4){showPayError('Data de expirare este invalida.');return;}
     if(cvv.length<3){showPayError('CVV-ul este invalid.');return;}
     if(!name){showPayError('Introdu numele de pe card.');return;}
-    // Salveaza cardul daca e selectat
     if(document.getElementById('save-card-toggle').dataset.on==='1'){
-      const p=getProfile(); p.card=num;
+      var p=getProfile(); p.card=num;
       localStorage.setItem('tp_profile',JSON.stringify(p));
     }
   }
-  // Simuleaza procesare
-  const btn=document.getElementById('pay-confirm-btn');
+  var btn=document.getElementById('pay-confirm-btn');
   btn.textContent='SE PROCESEAZA...';
   btn.style.opacity='.7';
   btn.disabled=true;
-  setTimeout(()=>{
+  setTimeout(function(){
     closePayModal();
     btn.textContent='PLATESTE'; btn.style.opacity='1'; btn.disabled=false;
-    // Confirma rezervarea
     saveToLog(cur); addPoints(5);
     document.getElementById('t-sub').textContent='LOC '+cur.id+' · '+payHours+'h · '+(payHours*cur.price)+' LEI · +5 PTS';
-    const t=document.getElementById('toast');
-    t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500);
+    var t=document.getElementById('toast');
+    t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},3500);
     closePanel();
   },1800);
 }
+
 // Inchide modalul la click pe overlay
 document.getElementById('pay-overlay').addEventListener('click',function(e){
   if(e.target===this)closePayModal();
 });
-
 </script>
-
-<!-- MODAL PLATA -->
-<div id="pay-overlay" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center">
-  <div id="pay-modal" style="background:#283040;border-radius:20px 20px 0 0;border-top:1px solid rgba(255,255,255,.12);width:100%;max-width:480px;padding:0 20px calc(28px + env(safe-area-inset-bottom));animation:slideUp .35s cubic-bezier(.16,1,.3,1)">
-    <div style="width:32px;height:3px;background:rgba(255,255,255,.15);border-radius:3px;margin:12px auto 18px"></div>
-
-    <!-- Header -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#fff">Plata rezervare</div>
-        <div id="pay-subtitle" style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">LOC #A1 · 5 lei/ora</div>
-      </div>
-      <button onclick="closePayModal()" style="width:32px;height:32px;background:rgba(255,255,255,.08);border:none;border-radius:8px;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
-    </div>
-
-    <!-- Durata -->
-    <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;margin-bottom:14px">
-      <div style="font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.1em;margin-bottom:10px">DURATA PARCARE</div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <button onclick="changeHours(-1)" style="width:36px;height:36px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">−</button>
-        <div style="flex:1;text-align:center">
-          <div id="pay-hours" style="font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:#fff">1</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.3)">ore</div>
-        </div>
-        <button onclick="changeHours(1)" style="width:36px;height:36px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">+</button>
-        <div style="background:rgba(250,204,21,.1);border:1px solid rgba(250,204,21,.2);border-radius:10px;padding:10px 16px;text-align:center;min-width:80px">
-          <div id="pay-total" style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#facc15">5</div>
-          <div style="font-size:9px;color:rgba(250,204,21,.5)">LEI TOTAL</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tab-uri metode plata -->
-    <div style="display:flex;gap:6px;margin-bottom:14px">
-      <button id="tab-card" onclick="setPayTab('card')" style="flex:1;padding:9px 6px;background:#fff;border:none;border-radius:9px;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;color:#000;cursor:pointer">CARD</button>
-      <button id="tab-revolut" onclick="setPayTab('revolut')" style="flex:1;padding:9px 6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:9px;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer">REVOLUT</button>
-      <button id="tab-applepay" onclick="setPayTab('applepay')" style="flex:1;padding:9px 6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:9px;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer">APPLE/G PAY</button>
-    </div>
-
-    <!-- Continut tab CARD -->
-    <div id="content-card">
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
-        <div>
-          <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.08em;margin-bottom:5px">NUMAR CARD</div>
-          <div style="position:relative">
-            <input id="pay-card-num" type="tel" inputmode="numeric" placeholder="1234 5678 9012 3456" maxlength="19"
-              oninput="fmtCard(this)"
-              style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 44px 13px 14px;color:#fff;font-size:15px;outline:none;letter-spacing:.05em">
-            <div id="card-brand-icon" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none">💳</div>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div>
-            <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.08em;margin-bottom:5px">EXPIRARE</div>
-            <input id="pay-expiry" type="tel" inputmode="numeric" placeholder="MM / AA" maxlength="7"
-              oninput="fmtExpiry(this)"
-              style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 14px;color:#fff;font-size:15px;outline:none">
-          </div>
-          <div>
-            <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.08em;margin-bottom:5px">CVV</div>
-            <div style="position:relative">
-              <input id="pay-cvv" type="tel" inputmode="numeric" placeholder="•••" maxlength="4"
-                style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 14px;color:#fff;font-size:15px;outline:none">
-              <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;opacity:.4" onclick="toggleCvv()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#fff" stroke-width="1.5"/><circle cx="12" cy="12" r="3" stroke="#fff" stroke-width="1.5"/></svg>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.08em;margin-bottom:5px">NUME PE CARD</div>
-          <input id="pay-name" type="text" placeholder="PRENUME NUME" autocomplete="cc-name"
-            oninput="this.value=this.value.toUpperCase()"
-            style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 14px;color:#fff;font-size:15px;outline:none;letter-spacing:.04em">
-        </div>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-          <div id="save-card-toggle" onclick="toggleSaveCard()" data-on="0" style="width:40px;height:22px;background:rgba(255,255,255,.15);border-radius:11px;position:relative;flex-shrink:0;transition:background .2s">
-            <div style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:all .2s"></div>
-          </div>
-          <span style="font-size:12px;color:rgba(255,255,255,.5)">Salveaza cardul pentru data viitoare</span>
-        </label>
-      </div>
-    </div>
-
-    <!-- Continut tab REVOLUT -->
-    <div id="content-revolut" style="display:none;margin-bottom:14px">
-      <div style="background:rgba(25,28,73,.6);border:1px solid rgba(100,100,255,.2);border-radius:12px;padding:20px;text-align:center">
-        <div style="font-size:32px;margin-bottom:8px">R</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:4px">Plata prin Revolut</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px">Vei fi redirectionat catre aplicatia Revolut</div>
-        <div id="revolut-amount" style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#fff;margin-bottom:4px">5 lei</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.3)">de plata</div>
-      </div>
-    </div>
-
-    <!-- Continut tab APPLE/GOOGLE PAY -->
-    <div id="content-applepay" style="display:none;margin-bottom:14px">
-      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;text-align:center">
-        <div style="font-size:32px;margin-bottom:8px">⬛</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:4px">Apple Pay / Google Pay</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:14px">Confirma cu amprenta sau Face ID</div>
-        <div id="applepay-amount" style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#fff;margin-bottom:4px">5 lei</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.3)">de plata</div>
-      </div>
-    </div>
-
-    <!-- Eroare validare -->
-    <div id="pay-error" style="display:none;background:rgba(255,60,80,.1);border:1px solid rgba(255,60,80,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:rgba(255,100,120,.9);margin-bottom:12px"></div>
-
-    <!-- Buton confirmare -->
-    <button onclick="confirmPayment()" id="pay-confirm-btn"
-      style="width:100%;padding:17px;background:#fff;border:none;border-radius:12px;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:#000;cursor:pointer;transition:all .2s;letter-spacing:.03em">
-      PLATESTE 5 LEI
-    </button>
-
-    <!-- Siguranta -->
-    <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="rgba(255,255,255,.25)" stroke-width="1.5" stroke-linejoin="round"/></svg>
-      <span style="font-size:10px;color:rgba(255,255,255,.2)">Plata securizata SSL · PCI DSS compliant</span>
-    </div>
-  </div>
-</div>
-<style>
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-</style>
-
-<script>
-// ── AUTH STATE ────────────────────────────────────────
-var aUserData = null;
-var aPendingPhone = '';
-var aConfirmResult = null;
-var aRecaptchaVerifier = null;
-var aOtpTimerIv = null;
-var aObSlide = 0;
-var aFirebaseAuth = null;
-var aFirebaseDB = null;
-
-function showAuthScreen(id){
-  document.querySelectorAll('.auth-screen').forEach(function(s){s.classList.remove('show');});
-  var el = document.getElementById(id);
-  if(el) el.classList.add('show');
-}
-
-function aHideAuth(){
-  document.querySelectorAll('.auth-screen').forEach(function(s){s.classList.remove('show');});
-}
-
-// Called by boot after animation
-function authBoot(){
-  // Load Firebase auth async
-  Promise.all([
-    import('https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js'),
-    import('https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js'),
-    import('https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js')
-  ]).then(function(mods){
-    var initializeApp = mods[0].initializeApp;
-    var getAuth = mods[1].getAuth, RecaptchaVerifier = mods[1].RecaptchaVerifier, signInWithPhoneNumber = mods[1].signInWithPhoneNumber, onAuthStateChanged = mods[1].onAuthStateChanged;
-    var getDatabase = mods[2].getDatabase, ref = mods[2].ref, get = mods[2].get, set = mods[2].set;
-
-    var fbCfg = {apiKey:'AIzaSyDF63PQ9s2AG9_8ho9u6v-myzDrs_SrtbY',authDomain:'tireapark.firebaseapp.com',databaseURL:'https://tireapark-default-rtdb.firebaseio.com',projectId:'tireapark',storageBucket:'tireapark.firebasestorage.app',messagingSenderId:'503087510644',appId:'1:503087510644:web:18d5e122c67afe110e8d21'};
-    
-    // Use existing app if already initialized
-    var fbApp;
-    try { fbApp = initializeApp(fbCfg, 'auth'); } catch(e) { fbApp = initializeApp(fbCfg); }
-    
-    aFirebaseAuth = getAuth(fbApp);
-    aFirebaseDB = getDatabase(fbApp);
-
-    // Store refs for OTP
-    window._aRecaptchaVerifier = RecaptchaVerifier;
-    window._aSignInWithPhone = signInWithPhoneNumber;
-    window._aRef = ref;
-    window._aGet = get;
-    window._aSet = set;
-
-    onAuthStateChanged(aFirebaseAuth, function(user){
-      if(user){
-        // Already logged in — load data and go to map
-        get(ref(aFirebaseDB, 'users/'+user.uid)).then(function(snap){
-          if(snap.exists()) aUserData = snap.val();
-          else {
-            var saved = localStorage.getItem('tp_ud_'+user.phoneNumber);
-            if(saved) aUserData = JSON.parse(saved);
-          }
-          aHideAuth();
-        }).catch(function(){ aHideAuth(); });
-      } else {
-        // Check localStorage for demo mode
-        var phone = localStorage.getItem('tp_last_phone');
-        if(phone){
-          var saved = localStorage.getItem('tp_ud_'+phone);
-          if(saved){ aUserData = JSON.parse(saved); aHideAuth(); return; }
-        }
-        // Not logged in — show auth
-        showAuthScreen(localStorage.getItem('tp_onboard_seen') ? 'scr-phone' : 'scr-onboard');
-      }
-    });
-  }).catch(function(e){
-    console.error('Auth Firebase load error:', e);
-    // Fallback: check localStorage
-    var phone = localStorage.getItem('tp_last_phone');
-    if(phone){
-      var saved = localStorage.getItem('tp_ud_'+phone);
-      if(saved){ aUserData = JSON.parse(saved); aHideAuth(); return; }
-    }
-    showAuthScreen(localStorage.getItem('tp_onboard_seen') ? 'scr-phone' : 'scr-onboard');
-  });
-}
-
-function obNext(){
-  if(aObSlide < 2){
-    aObSlide++;
-    document.getElementById('ob-slides').style.transform = 'translateX(-'+aObSlide*33.333+'%)';
-    for(var i=0;i<3;i++) document.getElementById('dot-'+i).className = 'ob-dot'+(i===aObSlide?' act':'');
-    if(aObSlide===2) document.getElementById('ob-next-btn').textContent = 'CREEAZA CONT GRATUIT';
-  } else {
-    localStorage.setItem('tp_onboard_seen','1');
-    showAuthScreen('scr-phone');
-  }
-}
-
-function aSendOTP(){
-  var phone = document.getElementById('a-phone').value.replace(/[^0-9]/g,'');
-  var errEl = document.getElementById('a-err-phone');
-  if(phone.length < 9){ errEl.style.display='block'; return; }
-  errEl.style.display = 'none';
-  aPendingPhone = '+40'+phone;
-  localStorage.setItem('tp_last_phone', aPendingPhone);
-  document.getElementById('a-otp-sub').textContent = 'Am trimis un cod de 6 cifre la '+aPendingPhone;
-  var btn = document.getElementById('a-send-btn');
-  btn.textContent = 'SE TRIMITE...'; btn.disabled = true;
-
-  if(!aFirebaseAuth || !window._aSignInWithPhone){
-    // Demo mode
-    aConfirmResult = {demo: true};
-    btn.textContent = 'TRIMITE COD SMS'; btn.disabled = false;
-    showAuthScreen('scr-otp');
-    aStartOtpTimer();
-    return;
-  }
-
-  try {
-    if(!aRecaptchaVerifier) aRecaptchaVerifier = new window._aRecaptchaVerifier(aFirebaseAuth, 'a-send-btn', {size:'invisible'});
-    window._aSignInWithPhone(aFirebaseAuth, aPendingPhone, aRecaptchaVerifier).then(function(result){
-      aConfirmResult = result;
-      btn.textContent = 'TRIMITE COD SMS'; btn.disabled = false;
-      showAuthScreen('scr-otp');
-      aStartOtpTimer();
-    }).catch(function(e){
-      console.log('SMS error, demo mode:', e);
-      aConfirmResult = {demo: true};
-      btn.textContent = 'TRIMITE COD SMS'; btn.disabled = false;
-      showAuthScreen('scr-otp');
-      aStartOtpTimer();
-    });
-  } catch(e) {
-    aConfirmResult = {demo: true};
-    btn.textContent = 'TRIMITE COD SMS'; btn.disabled = false;
-    showAuthScreen('scr-otp');
-    aStartOtpTimer();
-  }
-}
-
-function aStartOtpTimer(){
-  var t = 60;
-  var el = document.getElementById('a-countdown');
-  var row = document.getElementById('a-timer-row');
-  var resend = document.getElementById('a-resend-btn');
-  if(aOtpTimerIv) clearInterval(aOtpTimerIv);
-  row.style.display = 'block'; resend.style.display = 'none';
-  aOtpTimerIv = setInterval(function(){
-    t--; el.textContent = t;
-    if(t<=0){ clearInterval(aOtpTimerIv); row.style.display='none'; resend.style.display='block'; }
-  }, 1000);
-}
-
-function aOtpInput(el, idx){
-  el.value = el.value.replace(/[^0-9]/g,'').slice(-1);
-  if(el.value && idx < 5) document.getElementById('otp'+(idx+1)).focus();
-  var code = '';
-  for(var i=0;i<6;i++) code += (document.getElementById('otp'+i).value||'');
-  if(code.length === 6) aVerifyOTP();
-}
-
-function aVerifyOTP(){
-  var code = '';
-  for(var i=0;i<6;i++) code += (document.getElementById('otp'+i).value||'');
-  if(code.length < 6) return;
-  var btn = document.getElementById('a-verify-btn');
-  btn.textContent = 'SE VERIFICA...'; btn.disabled = true;
-  var errEl = document.getElementById('a-err-otp');
-
-  function onSuccess(){
-    var saved = localStorage.getItem('tp_ud_'+aPendingPhone);
-    if(saved){ aUserData = JSON.parse(saved); aHideAuth(); btn.textContent='VERIFICA CODUL'; btn.disabled=false; return; }
-    btn.textContent = 'VERIFICA CODUL'; btn.disabled = false;
-    showAuthScreen('scr-profile-setup');
-  }
-
-  function onFail(){
-    errEl.style.display = 'block';
-    for(var i=0;i<6;i++){ var b=document.getElementById('otp'+i); b.className='otp-box err'; b.value=''; }
-    setTimeout(function(){ for(var i=0;i<6;i++) document.getElementById('otp'+i).className='otp-box'; errEl.style.display='none'; document.getElementById('otp0').focus(); }, 1200);
-    btn.textContent = 'VERIFICA CODUL'; btn.disabled = false;
-  }
-
-  if(aConfirmResult && aConfirmResult.demo){
-    // Demo: any 6-digit code works
-    onSuccess();
-  } else if(aConfirmResult) {
-    aConfirmResult.confirm(code).then(function(result){
-      if(window._aGet && window._aRef && aFirebaseDB){
-        window._aGet(window._aRef(aFirebaseDB,'users/'+result.user.uid)).then(function(snap){
-          if(snap.exists()){ aUserData = snap.val(); aHideAuth(); }
-          else showAuthScreen('scr-profile-setup');
-          btn.textContent='VERIFICA CODUL'; btn.disabled=false;
-        }).catch(function(){ showAuthScreen('scr-profile-setup'); btn.textContent='VERIFICA CODUL'; btn.disabled=false; });
-      } else { showAuthScreen('scr-profile-setup'); btn.textContent='VERIFICA CODUL'; btn.disabled=false; }
-    }).catch(onFail);
-  } else { onFail(); }
-}
-
-function aSaveProfile(){
-  var name = document.getElementById('a-name').value.trim();
-  var email = document.getElementById('a-email').value.trim();
-  var pass = document.getElementById('a-pass').value;
-  var ok = true;
-  if(!name){document.getElementById('a-err-name').style.display='block';ok=false;}else document.getElementById('a-err-name').style.display='none';
-  if(!email||!email.includes('@')){document.getElementById('a-err-email').style.display='block';ok=false;}else document.getElementById('a-err-email').style.display='none';
-  if(pass.length<6){document.getElementById('a-err-pass').style.display='block';ok=false;}else document.getElementById('a-err-pass').style.display='none';
-  if(!ok) return;
-  aUserData = {name:name, email:email, phone:aPendingPhone, plates:[], points:0, createdAt:Date.now()};
-  aSaveData();
-  aRenderPlates([]);
-  showAuthScreen('scr-cars');
-}
-
-function aSaveData(){
-  if(!aUserData) return;
-  localStorage.setItem('tp_ud_'+(aUserData.phone||'anon'), JSON.stringify(aUserData));
-}
-
-function aRenderPlates(plates){
-  var el = document.getElementById('a-plate-list');
-  el.innerHTML = plates.map(function(p,i){ return '<div class="plate-item"><div class="plate-num">&#128663; '+p+'</div><button class="plate-del" onclick="aRemovePlate('+i+')">&#10005;</button></div>'; }).join('');
-  var row = document.getElementById('a-add-plate-row');
-  if(row) row.style.display = plates.length >= 5 ? 'none' : 'flex';
-}
-
-function aAddPlate(){
-  var val = document.getElementById('a-plate').value.trim().toUpperCase();
-  var errEl = document.getElementById('a-err-plate');
-  if(!val || val.length < 4){ errEl.style.display='block'; return; }
-  errEl.style.display = 'none';
-  if(!aUserData) aUserData = {plates:[]};
-  if(!aUserData.plates) aUserData.plates = [];
-  if(aUserData.plates.length >= 5) return;
-  aUserData.plates.push(val);
-  aSaveData(); aRenderPlates(aUserData.plates);
-  document.getElementById('a-plate').value = '';
-}
-
-function aRemovePlate(i){
-  if(!aUserData || !aUserData.plates) return;
-  aUserData.plates.splice(i,1);
-  aSaveData(); aRenderPlates(aUserData.plates);
-}
-
-function aFinish(){
-  aSaveData();
-  // Patch profile fields in original agent panel
-  if(aUserData){
-    if(aUserData.name){ 
-      var av = document.getElementById('agent-avatar');
-      if(av) av.textContent = aUserData.name[0].toUpperCase();
-      var nd = document.getElementById('agent-name-display');
-      if(nd) nd.textContent = aUserData.name;
-    }
-    if(aUserData.email){
-      var ed = document.getElementById('agent-email-display');
-      if(ed) ed.textContent = aUserData.email;
-    }
-    if(aUserData.plates && aUserData.plates.length){
-      var cd = document.getElementById('car-display');
-      if(cd) cd.textContent = aUserData.plates[0];
-      var pd = document.getElementById('plate-display');
-      if(pd) pd.textContent = aUserData.plates[0];
-      // Fill inp-plate in agent panel
-      var ip = document.getElementById('inp-plate');
-      if(ip) ip.value = aUserData.plates[0];
-    }
-  }
-  aHideAuth();
-}
-</script>
-
 </body>
 </html>
